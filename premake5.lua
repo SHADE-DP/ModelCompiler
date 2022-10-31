@@ -8,7 +8,8 @@ workspace "Assimp Compile Library"
   configurations
   {
     "Debug",
-    "Release"
+    "Release",
+    "Publish"
   }
   
   flags

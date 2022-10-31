@@ -13,31 +13,29 @@
 #pragma once
 
 #include <vector>
-#include <string>
-#include <cstdint>
 
 namespace SHADE
 {
-	struct SHVec3
-	{
-		float x, y, z;
-	};
 
 	struct SHVec2
 	{
 		float x, y;
 	};
 
+	struct SHVec3
+	{
+		float x, y, z;
+	};
+
 	struct SHMeshAssetHeader
 	{
 		uint32_t vertexCount;
 		uint32_t indexCount;
-		std::string meshName;
+		std::string name;
 	};
 
 	struct SHMeshAsset
 	{
-		std::string parentPath;
 		bool compiled;
 		bool changed;
 

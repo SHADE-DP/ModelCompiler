@@ -47,14 +47,25 @@ project "Assimp Compile Library"
       "xcopy  /r /y /q \"%{IncludeDir.assimp}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
     }
 
+  filter "configurations:Publish"
+    postbuildcommands 
+    {
+      "xcopy  /r /y /q \"%{IncludeDir.assimp}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
+    }
+
   warnings 'Extra'
   
   filter "configurations:Debug"
     symbols "On"
-    defines {"_DEBUG", "SHEDITOR"}
+    defines {"_DEBUG"}
     links{"assimp-vc142-mtd.lib"}
   
   filter "configurations:Release"
     optimize "On"
-    defines{"_RELEASE", "SHEDITOR"}
+    defines{"_RELEASE"}
+    links{"assimp-vc142-mt.lib"}
+  
+  filter "configurations:Publish"
+    optimize "On"
+    defines{"_RELEASE, _PUBLISH"}
     links{"assimp-vc142-mt.lib"}
