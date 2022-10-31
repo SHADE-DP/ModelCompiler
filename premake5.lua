@@ -1,7 +1,7 @@
 IncludeDir = {}
 IncludeDir["assimp"] = "%{wks.location}\\Dependencies\\assimp"
 
-workspace "MeshCompileLibrary"
+workspace "ModelCompileLibrary"
   architecture "x64"
   startproject "Assimp Compile Application"
   
@@ -20,4 +20,4 @@ workspace "MeshCompileLibrary"
   outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
   interdir = "%{wks.location}/bin_int"
   
-  include "MeshCompileLibrary"
+  include "ModelCompileLibrary"

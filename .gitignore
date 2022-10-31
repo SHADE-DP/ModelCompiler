@@ -355,6 +355,4 @@ MigrationBackup/
 
 Premake/
 
-Dependencies/assimp
-
 *.sln
