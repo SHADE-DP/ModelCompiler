@@ -23,7 +23,8 @@ int main(int argc, char* argv[])
 		{
 			for (auto const& dir : std::filesystem::recursive_directory_iterator{ "./Assets/" })
 			{
-				if (dir.path().extension().string() == GLTF_EXTENSION)
+				if (dir.path().extension().string() == GLTF_EXTENSION || 
+					dir.path().extension().string() == FBX_EXTENSION)
 				{
 					paths.push_back(dir.path().string());
 				}
