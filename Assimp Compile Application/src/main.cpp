@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <filesystem>
+#include <iostream>
 
 int main(int argc, char* argv[])
 {	
@@ -21,17 +22,21 @@ int main(int argc, char* argv[])
 	{
 		if (std::filesystem::is_directory(ASSET_ROOT))
 		{
-			for (auto const& dir : std::filesystem::recursive_directory_iterator{ "./Assets/" })
+			for (auto& dir : 
+				std::filesystem::recursive_directory_iterator{ ASSET_ROOT })
 			{
 				if (dir.path().extension().string() == GLTF_EXTENSION || 
 					dir.path().extension().string() == FBX_EXTENSION)
 				{
-					paths.push_back(dir.path().string());
+					auto path = dir.path();
+					path.make_preferred();
+					paths.push_back(path.string());
 				}
 			}
 		}
 		else
 		{
+			std::cout << "Default path not found!" << std::endl;
 			return 1;
 		}
 	}
