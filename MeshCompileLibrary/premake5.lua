@@ -1,4 +1,4 @@
-project "Assimp Compile Library"
+project "MeshCompileLibrary"
   kind "ConsoleApp"
   language "C++"
   cppdialect "C++20"
