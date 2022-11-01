@@ -1,5 +1,4 @@
-IncludeDir = {}
-IncludeDir["assimp"] = "%{wks.location}\\Dependencies\\assimp" 
+AssimpInclude = "%{wks.location}\\Dependencies\\assimp" 
 
 project "ModelCompileLibrary"
   kind "ConsoleApp"
@@ -25,7 +24,7 @@ project "ModelCompileLibrary"
 
   externalincludedirs
   {
-	  "%{IncludeDir.assimp}\\include"
+	  "%{AssimpInclude}\\include"
   }
   
   includedirs
@@ -37,8 +36,8 @@ project "ModelCompileLibrary"
   
   libdirs
   {
-    "%{IncludeDir.assimp}/lib/Debug",
-    "%{IncludeDir.assimp}/lib/Release"
+    "%{AssimpInclude}/lib/Debug",
+    "%{AssimpInclude}/lib/Release"
   }
 
   flags
@@ -49,19 +48,19 @@ project "ModelCompileLibrary"
   filter "configurations:Debug"
     postbuildcommands 
     {
-      "xcopy  /r /y /q \"%{IncludeDir.assimp}\\bin\\Debug\\assimp-vc142-mtd.dll\" \"$(OutDir)\""
+      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Debug\\assimp-vc142-mtd.dll\" \"$(OutDir)\""
     }
     
   filter "configurations:Release"
     postbuildcommands 
     {
-      "xcopy  /r /y /q \"%{IncludeDir.assimp}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
+      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
     }
 
   filter "configurations:Publish"
     postbuildcommands 
     {
-      "xcopy  /r /y /q \"%{IncludeDir.assimp}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
+      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
     }
 
   warnings 'Extra'
