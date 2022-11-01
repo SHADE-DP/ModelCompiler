@@ -13,8 +13,9 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
-namespace SHADE
+namespace SH_COMP
 {
 
 	struct SHVec2
@@ -27,24 +28,32 @@ namespace SHADE
 		float x, y, z;
 	};
 
-	struct SHMeshAssetHeader
+	struct MeshDataHeader
 	{
 		uint32_t vertexCount;
 		uint32_t indexCount;
-		std::string name;
+		uint32_t charCount;
 	};
 
-	struct SHMeshAsset
+	struct MeshData
 	{
-		bool compiled;
-		bool changed;
-
-		SHMeshAssetHeader header;
-
+		std::string name;
 		std::vector<SHVec3> vertexPosition;
 		std::vector<SHVec3> vertexTangent;
 		std::vector<SHVec3> vertexNormal;
 		std::vector<SHVec2> texCoords;
 		std::vector<uint32_t> indices;
+	};
+
+	struct MeshAssetHeader
+	{
+		size_t meshCount;
+	};
+
+	struct MeshAsset
+	{
+		MeshAssetHeader header;
+		std::vector<MeshDataHeader> headers;
+		std::vector<MeshData> meshes;
 	};
 }

@@ -8,13 +8,6 @@ project "ModelCompileLibrary"
   objdir    (interdir)
   systemversion "latest"
   
-  
-  configurations
-  {
-    "Debug",
-    "Release",
-    "Publish"
-  }
 
   files  
   {

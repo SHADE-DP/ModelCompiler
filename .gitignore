@@ -356,3 +356,5 @@ MigrationBackup/
 Premake/
 
 *.sln
+
+Dependencies/

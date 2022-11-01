@@ -8,7 +8,7 @@
  *		        or disclosure of this file or its contents without the prior
  *			      written consent of Digipen Institute of Technology is prohibited.
  ******************************************************************************/
-#include "Libraries/SHMeshCompiler.h"
+#include "Libraries/MeshCompiler.h"
 
 #include <vector>
 #include <filesystem>

@@ -2,7 +2,7 @@
  * \file    SHMeshCompiler.h
  * \author  Loh Xiao Qi
  * \date    30 September 2022
- * \brief   Library to write data in SHMeshAsset into binary file for faster
+ * \brief   Library to write data in MeshAsset into binary file for faster
  *					loading in the future
  * 
  *
@@ -16,24 +16,30 @@
 #include <assimp/scene.h>
 #include <vector>
 
-#include "Types/SHAnimationAsset.h"
-#include "Types/SHMeshAsset.h"
-#include "SHAssetMacros.h"
+#include "Types/AnimationAsset.h"
+#include "Types/MeshAsset.h"
+#include "AssetMacros.h"
 
-namespace SHADE
+namespace SH_COMP
 {
-	class SHMeshCompiler
-	{
+  class MeshCompiler
+  {
 
-    using MeshVectorRef = std::vector<SHMeshAsset*>&;
-    using AnimVectorRef = std::vector<SHAnimationAsset*>&;
+    using MeshVectorRef = std::vector<MeshData>&;
+    using AnimVectorRef = std::vector<AnimationAsset>&;
 
     static Assimp::Importer aiImporter;
+
     static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes) noexcept;
     static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
-    static SHMeshAsset* ProcessMesh(aiMesh const& mesh) noexcept;
-    static void LoadFromFile(AssetPath path, MeshVectorRef meshes, AnimVectorRef anims) noexcept;
-    static std::optional<AssetPath> CompileMeshBinary(SHMeshAsset const& asset, AssetPath path) noexcept;
+    static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
+    static void BuildHeaders(MeshAsset& asset) noexcept;
+
+    static void WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header);
+    static void WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& data);
+
+    static void LoadFromFile(AssetPath path, MeshAsset& asset) noexcept;
+    static void CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept;
 
   public:
     static void LoadAndCompile(AssetPath path) noexcept;

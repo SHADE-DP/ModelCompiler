@@ -13,9 +13,9 @@
 #include <vector>
 #include <assimp/anim.h>
 
-namespace SHADE
+namespace SH_COMP
 {
-	struct SHAnimationAsset
+	struct AnimationAsset
 	{
 		std::string name;
 
