@@ -28,6 +28,7 @@ namespace SH_COMP
       aiMesh* mesh = scene.mMeshes[node.mMeshes[i]];
       meshes.emplace_back();
       GetMesh(*mesh, meshes.back());
+      meshes.back().name = node.mName.C_Str();
     }
 
     for (size_t i{ 0 }; i < node.mNumChildren; ++i)
@@ -111,8 +112,6 @@ namespace SH_COMP
         meshData.indices.push_back(face.mIndices[j]);
       }
     }
-
-    meshData.name = mesh.mName.C_Str();
   }
 
   void MeshCompiler::BuildHeaders(MeshAsset& asset) noexcept
