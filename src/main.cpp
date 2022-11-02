@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 
 	for (auto const& path : paths)
 	{
-		SHADE::SHMeshCompiler::LoadAndCompile(path);
+		SH_COMP::MeshCompiler::LoadAndCompile(path);
 	}
 
 	return 0;
