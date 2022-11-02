@@ -1,5 +1,13 @@
 AssimpInclude = "%{wks.location}\\Dependencies\\assimp" 
 
+-- workspace "ModelCompile"
+-- architecture "x64"
+--   configurations
+--   {
+--     "Release",
+--     "Debug"
+--   }
+
 project "ModelCompileLibrary"
   kind "ConsoleApp"
   language "C++"
@@ -7,7 +15,6 @@ project "ModelCompileLibrary"
   targetdir (outputdir)
   objdir    (interdir)
   systemversion "latest"
-  
 
   files  
   {
