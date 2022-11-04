@@ -8,7 +8,7 @@ AssimpInclude = "%{wks.location}\\Dependencies\\assimp"
 --     "Debug"
 --   }
 
-project "ModelCompileLibrary"
+project "ModelCompiler"
   kind "ConsoleApp"
   language "C++"
   cppdialect "C++20"
