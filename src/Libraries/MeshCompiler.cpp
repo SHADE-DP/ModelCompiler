@@ -203,7 +203,7 @@ namespace SH_COMP
   void MeshCompiler::CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept
   {
     std::string newPath{ path.string().substr(0, path.string().find_last_of('.')) };
-    newPath += MESH_EXTENSION;
+    newPath += MODEL_EXTENSION;
 
     std::ofstream file{ newPath, std::ios::out | std::ios::binary | std::ios::trunc };
     if (!file.is_open())

@@ -34,7 +34,7 @@ constexpr std::string_view BUILT_IN_ASSET_ROOT{ "../../Built_In" };
 
 // ASSET EXTENSIONS
 constexpr std::string_view TEXTURE_EXTENSION {".shtex"};
-constexpr std::string_view MESH_EXTENSION {".shmesh"};
+constexpr std::string_view MODEL_EXTENSION {".shmodel"};
 
 // EXTERNAL EXTENSIONS
 constexpr std::string_view FBX_EXTENSION{ ".fbx" };
