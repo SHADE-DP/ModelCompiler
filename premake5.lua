@@ -1,5 +1,7 @@
 AssimpInclude = "%{wks.location}\\Dependencies\\assimp" 
 
+-- outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
+-- interdir = "%{wks.location}/bin_int"
 -- workspace "ModelCompile"
 -- architecture "x64"
 --   configurations
