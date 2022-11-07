@@ -1,4 +1,4 @@
-AssimpInclude = "%{wks.location}\\Dependencies\\assimp" 
+AssimpInclude = "%{prj.location}\\Dependencies\\assimp" 
 
 -- outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
 -- interdir = "%{wks.location}/bin_int"
