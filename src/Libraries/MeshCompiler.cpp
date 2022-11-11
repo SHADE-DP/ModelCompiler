@@ -241,20 +241,16 @@ namespace SH_COMP
     file.close();
   }
 
-  void MeshCompiler::BuildArmature(aiNode const* node, RigNode*& root) noexcept
+  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigNode*& root) noexcept
   {
     std::queue<aiNode const*> nodes;
-    nodes.push(node);
+    nodes.push(&baseNode);
+
     root = new RigNode();
+    RigNode* parent = nullptr;
     auto current = root;
 
-    while(!nodes.empty())
-    {
-      auto node = nodes.front();
-      nodes.pop();
-
-      current->name = node->mName.C_Str();
-    }
+		//TODO Use CopyNode de recursive copy
   }
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
