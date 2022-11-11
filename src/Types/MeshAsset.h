@@ -28,6 +28,11 @@ namespace SH_COMP
 		float x, y, z;
 	};
 
+	struct SHMat4
+	{
+		float data[16];
+	};
+
 	struct MeshDataHeader
 	{
 		uint32_t vertexCount;
@@ -45,6 +50,18 @@ namespace SH_COMP
 		std::vector<uint32_t> indices;
 	};
 
+	struct RigNode
+	{
+		std::string name;
+		SHMat4 transform;
+		std::vector<RigNode*> children;
+	};
+
+	struct RigData
+	{
+		RigNode* root;
+	};
+
 	struct MeshAssetHeader
 	{
 		size_t meshCount;
@@ -53,6 +70,7 @@ namespace SH_COMP
 	struct MeshAsset
 	{
 		MeshAssetHeader header;
+		RigData rig;
 		std::vector<MeshDataHeader> headers;
 		std::vector<MeshData> meshes;
 	};

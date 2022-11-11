@@ -30,7 +30,7 @@ namespace SH_COMP
 
     static Assimp::Importer aiImporter;
 
-    static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes) noexcept;
+    static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept;
     static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(MeshAsset& asset) noexcept;
@@ -41,6 +41,7 @@ namespace SH_COMP
     static void LoadFromFile(AssetPath path, MeshAsset& asset) noexcept;
     static void CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept;
 
+    static void BuildArmature(aiNode const* node, RigNode*& root) noexcept;
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};

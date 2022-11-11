@@ -16,12 +16,14 @@
 #include <fstream>
 #include <iostream>
 
+#include <queue>
+
 namespace SH_COMP
 {
 
   Assimp::Importer MeshCompiler::aiImporter;
 
-  void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes) noexcept
+  void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept
   {
     for (size_t i{ 0 }; i < node.mNumMeshes; ++i)
     {
@@ -31,9 +33,16 @@ namespace SH_COMP
       meshes.back().name = node.mName.C_Str();
     }
 
-    for (size_t i{ 0 }; i < node.mNumChildren; ++i)
+    if (std::strcmp(node.mName.C_Str(), "Armature") == 0)
     {
-      ProcessNode(*node.mChildren[i], scene, meshes);
+      BuildArmature(&node, root);
+    }
+    else
+    {
+      for (size_t i{ 0 }; i < node.mNumChildren; ++i)
+      {
+        ProcessNode(*node.mChildren[i], scene, meshes, root);
+      }
     }
   }
 
@@ -64,6 +73,12 @@ namespace SH_COMP
     meshData.vertexNormal.reserve(mesh.mNumVertices);
     meshData.vertexTangent.reserve(mesh.mNumVertices);
     meshData.texCoords.reserve(mesh.mNumVertices);
+
+    for (auto i {0}; i < mesh.mNumBones; ++i)
+    {
+      auto& bone = *mesh.mBones[i];
+      std::cout << "bone" << std::endl;
+    }
 
     for (size_t i{ 0 }; i < mesh.mNumVertices; ++i)
     {
@@ -175,16 +190,16 @@ namespace SH_COMP
 
   void MeshCompiler::LoadFromFile(AssetPath path, MeshAsset& asset) noexcept
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),
-      aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
-      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
-      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
-      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
-      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
-      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
-      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
-      | aiProcess_ValidateDataStructure
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),0
+      //aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
+      //| aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
+      //| aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
+      //| aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
+      //| aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
+      //| aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
+      //| aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
+      //| aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      //| aiProcess_ValidateDataStructure
     );
 
     if (!scene || !scene->HasMeshes())
@@ -195,7 +210,7 @@ namespace SH_COMP
 
     //ExtractAnimations(*scene, anims);
 
-    ProcessNode(*scene->mRootNode, *scene, asset.meshes);
+    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig.root);
 
     aiImporter.FreeScene();
   }
@@ -226,9 +241,27 @@ namespace SH_COMP
     file.close();
   }
 
+  void MeshCompiler::BuildArmature(aiNode const* node, RigNode*& root) noexcept
+  {
+    std::queue<aiNode const*> nodes;
+    nodes.push(node);
+    root = new RigNode();
+    auto current = root;
+
+    while(!nodes.empty())
+    {
+      auto node = nodes.front();
+      nodes.pop();
+
+      current->name = node->mName.C_Str();
+    }
+  }
+
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
   {
     auto const asset = new MeshAsset();
+
+    asset->rig.root = nullptr;
 
     LoadFromFile(path, *asset);
     BuildHeaders(*asset);

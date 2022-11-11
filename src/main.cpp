@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 	//	SH_COMP::MeshCompiler::LoadAndCompile(path);
 	//}
 
-	SH_COMP::MeshCompiler::LoadAndCompile("Racoon.gltf");
+	SH_COMP::MeshCompiler::LoadAndCompile("Racoon.fbx");
 
 	return 0;
 }
