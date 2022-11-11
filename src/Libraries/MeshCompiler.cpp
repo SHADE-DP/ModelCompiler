@@ -182,9 +182,9 @@ namespace SH_COMP
       | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
       | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
       | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      | aiProcess_RemoveRedundantMaterials  // remove redundant materials
       | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
       | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      | aiProcess_ValidateDataStructure
     );
 
     if (!scene || !scene->HasMeshes())
