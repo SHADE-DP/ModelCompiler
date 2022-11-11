@@ -42,7 +42,7 @@ namespace SH_COMP
     static void CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept;
 
     static void BuildArmature(aiNode const& node, RigNode*& root) noexcept;
-    static void CopyNode(aiNode const& source, RigNode*& parent) noexcept;
+    static void CopyNode(aiNode const& source, RigNode* parent) noexcept;
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};

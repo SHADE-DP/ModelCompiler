@@ -35,7 +35,7 @@ namespace SH_COMP
 
     if (std::strcmp(node.mName.C_Str(), "Armature") == 0)
     {
-      BuildArmature(&node, root);
+      BuildArmature(node, root);
     }
     else
     {
@@ -243,14 +243,28 @@ namespace SH_COMP
 
   void MeshCompiler::BuildArmature(aiNode const& baseNode, RigNode*& root) noexcept
   {
-    std::queue<aiNode const*> nodes;
-    nodes.push(&baseNode);
+    RigNode* start = new RigNode();
 
-    root = new RigNode();
-    RigNode* parent = nullptr;
-    auto current = root;
+    CopyNode(baseNode, start);
 
-		//TODO Use CopyNode de recursive copy
+    root = start->children[0];
+  }
+
+  void MeshCompiler::CopyNode(aiNode const& source, RigNode* parent) noexcept
+  {
+    RigNode* current = new RigNode();
+    current->name = source.mName.C_Str();
+    std::memcpy(&current->transform, &source.mTransformation, sizeof(float) * 16);
+
+    for (auto i {0}; i < source.mNumChildren; ++i)
+    {
+      CopyNode(*source.mChildren[i], current);
+    }
+
+    if (parent)
+    {
+      parent->children.push_back(current);
+    }
   }
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
