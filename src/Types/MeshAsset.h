@@ -38,6 +38,26 @@ namespace SH_COMP
 		uint32_t vertexCount;
 		uint32_t indexCount;
 		uint32_t charCount;
+		uint32_t boneCount;
+	};
+
+	struct MeshBoneInfo
+	{
+		uint32_t charCount;
+		uint32_t weightCount; // Size should be same as boneCount
+	};
+
+	struct BoneWeight
+	{
+		uint32_t index;
+		float weight;
+	};
+
+	struct MeshBone
+	{
+		std::string name;
+		SHMat4 offset;
+		std::vector<BoneWeight> weights;
 	};
 
 	struct MeshData
@@ -48,11 +68,14 @@ namespace SH_COMP
 		std::vector<SHVec3> vertexNormal;
 		std::vector<SHVec2> texCoords;
 		std::vector<uint32_t> indices;
+		std::vector<MeshBoneInfo> bonesInfo;
+		std::vector<MeshBone> bones;
 	};
 
 	struct RigNode
 	{
 		std::string name;
+		uint32_t id;
 		SHMat4 transform;
 		std::vector<RigNode*> children;
 	};
@@ -62,15 +85,14 @@ namespace SH_COMP
 		RigNode* root;
 	};
 
-	struct MeshAssetHeader
+	struct ModelAssetHeader
 	{
 		size_t meshCount;
 	};
 
-	struct MeshAsset
+	struct ModelAsset
 	{
-		MeshAssetHeader header;
-		RigData rig;
+		ModelAssetHeader header;
 		std::vector<MeshDataHeader> headers;
 		std::vector<MeshData> meshes;
 	};

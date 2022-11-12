@@ -74,10 +74,27 @@ namespace SH_COMP
     meshData.vertexTangent.reserve(mesh.mNumVertices);
     meshData.texCoords.reserve(mesh.mNumVertices);
 
+    meshData.bonesInfo.resize(mesh.mNumBones);
+    meshData.bones.resize(mesh.mNumBones);
+
     for (auto i {0}; i < mesh.mNumBones; ++i)
     {
-      auto& bone = *mesh.mBones[i];
-      std::cout << "bone" << std::endl;
+      auto const& bone = *mesh.mBones[i];
+      auto& newBone = meshData.bones[i];
+      auto& newBoneInfo = meshData.bonesInfo[i];
+
+      newBone.name = bone.mName.C_Str();
+      newBoneInfo.charCount = newBone.name.length();
+
+      std::memcpy(&newBone.offset, &bone.mOffsetMatrix, sizeof(SHMat4));
+
+      newBone.weights.resize(bone.mNumWeights);
+      for (auto j {0}; j < bone.mNumWeights; ++j)
+      {
+        newBone.weights[j].index = bone.mWeights[j].mVertexId;
+        newBone.weights[j].weight = bone.mWeights[j].mWeight;
+      }
+      newBoneInfo.weightCount = bone.mNumWeights;
     }
 
     for (size_t i{ 0 }; i < mesh.mNumVertices; ++i)
@@ -129,7 +146,7 @@ namespace SH_COMP
     }
   }
 
-  void MeshCompiler::BuildHeaders(MeshAsset& asset) noexcept
+  void MeshCompiler::BuildHeaders(ModelAsset& asset) noexcept
   {
     for (auto const& mesh : asset.meshes)
     {
@@ -139,6 +156,7 @@ namespace SH_COMP
       head.charCount = mesh.name.size();
       head.indexCount = mesh.indices.size();
       head.vertexCount = mesh.vertexPosition.size();
+      head.boneCount = mesh.bonesInfo.size();
 
       asset.header.meshCount++;
     }
@@ -188,18 +206,18 @@ namespace SH_COMP
     );
   }
 
-  void MeshCompiler::LoadFromFile(AssetPath path, MeshAsset& asset) noexcept
+  void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),0
-      //aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
-      //| aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
-      //| aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
-      //| aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
-      //| aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
-      //| aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      //| aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
-      //| aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
-      //| aiProcess_ValidateDataStructure
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),
+      aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
+      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
+      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
+      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
+      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
+      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
+      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
+      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      | aiProcess_ValidateDataStructure
     );
 
     if (!scene || !scene->HasMeshes())
@@ -215,7 +233,7 @@ namespace SH_COMP
     aiImporter.FreeScene();
   }
 
-  void MeshCompiler::CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept
+  void MeshCompiler::CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept
   {
     std::string newPath{ path.string().substr(0, path.string().find_last_of('.')) };
     newPath += MODEL_EXTENSION;
@@ -254,7 +272,7 @@ namespace SH_COMP
   {
     RigNode* current = new RigNode();
     current->name = source.mName.C_Str();
-    std::memcpy(&current->transform, &source.mTransformation, sizeof(float) * 16);
+    std::memcpy(&current->transform, &source.mTransformation, sizeof(SHMat4));
 
     for (auto i {0}; i < source.mNumChildren; ++i)
     {
@@ -269,7 +287,7 @@ namespace SH_COMP
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
   {
-    auto const asset = new MeshAsset();
+    auto const asset = new ModelAsset();
 
     asset->rig.root = nullptr;
 

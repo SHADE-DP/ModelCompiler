@@ -33,13 +33,13 @@ namespace SH_COMP
     static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept;
     static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
-    static void BuildHeaders(MeshAsset& asset) noexcept;
+    static void BuildHeaders(ModelAsset& asset) noexcept;
 
     static void WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header);
-    static void WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& data);
+    static void WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& asset);
 
-    static void LoadFromFile(AssetPath path, MeshAsset& asset) noexcept;
-    static void CompileMeshBinary(AssetPath path, MeshAsset const& asset) noexcept;
+    static void LoadFromFile(AssetPath path, ModelAsset& asset) noexcept;
+    static void CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept;
 
     static void BuildArmature(aiNode const& node, RigNode*& root) noexcept;
     static void CopyNode(aiNode const& source, RigNode* parent) noexcept;
