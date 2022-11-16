@@ -1,38 +1,12 @@
-/*************************************************************************//**
- * \file    SHMeshAsset.h
- * \author  Loh Xiao Qi
- * \date    30 September 2022
- * \brief		Struct to contain ready data for loading into GPU. Also used for
- *					compilation into binary files
- * 
- *
- * Copyright (C) 2022 DigiPen Institute of Technology. Reproduction or
- * disclosure of this file or its contents without the prior written consent
- * of DigiPen Institute of Technology is prohibited.
- *****************************************************************************/
 #pragma once
 
 #include <vector>
 #include <string>
 
+#include "PseudoMath.h"
+
 namespace SH_COMP
 {
-
-	struct SHVec2
-	{
-		float x, y;
-	};
-
-	struct SHVec3
-	{
-		float x, y, z;
-	};
-
-	struct SHMat4
-	{
-		float data[16];
-	};
-
 	struct MeshDataHeader
 	{
 		uint32_t vertexCount;
@@ -70,30 +44,5 @@ namespace SH_COMP
 		std::vector<uint32_t> indices;
 		std::vector<MeshBoneInfo> bonesInfo;
 		std::vector<MeshBone> bones;
-	};
-
-	struct RigNode
-	{
-		std::string name;
-		uint32_t id;
-		SHMat4 transform;
-		std::vector<RigNode*> children;
-	};
-
-	struct RigData
-	{
-		RigNode* root;
-	};
-
-	struct ModelAssetHeader
-	{
-		size_t meshCount;
-	};
-
-	struct ModelAsset
-	{
-		ModelAssetHeader header;
-		std::vector<MeshDataHeader> headers;
-		std::vector<MeshData> meshes;
 	};
 }

@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "Types/AnimationAsset.h"
-#include "Types/MeshAsset.h"
+#include "Types/ModelAsset.h"
 #include "AssetMacros.h"
 
 namespace SH_COMP
@@ -31,7 +31,7 @@ namespace SH_COMP
     static Assimp::Importer aiImporter;
 
     static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept;
-    static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
+    //static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(ModelAsset& asset) noexcept;
 
@@ -43,6 +43,8 @@ namespace SH_COMP
 
     static void BuildArmature(aiNode const& node, RigNode*& root) noexcept;
     static void CopyNode(aiNode const& source, RigNode* parent) noexcept;
+
+    static void ParseAnimations(aiScene const& scene, std::vector<AnimationAsset>& anims) noexcept;
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};

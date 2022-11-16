@@ -10,18 +10,32 @@
  *****************************************************************************/
 #pragma once
 
+#include "PseudoMath.h"
 #include <vector>
 #include <assimp/anim.h>
 
 namespace SH_COMP
 {
+	struct AnimationKey
+	{
+		float time;
+		SHVec4 value;
+	};
+	struct AnimationNode
+	{
+		std::string name;
+		std::vector<AnimationKey> positionKeys;
+		std::vector<AnimationKey> rotationKeys;
+		std::vector<AnimationKey> scaleKeys;
+	};
+
 	struct AnimationAsset
 	{
 		std::string name;
 
-		std::vector<aiNodeAnim*> nodeChannels;
-		std::vector<aiMeshAnim*> meshChannels;
-		std::vector<aiMeshMorphAnim*> morphMeshChannels;
+		std::vector<AnimationNode> nodeChannels;
+		//std::vector<aiMeshAnim*> meshChannels;
+		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
 
 		double duration;
 		double ticksPerSecond;

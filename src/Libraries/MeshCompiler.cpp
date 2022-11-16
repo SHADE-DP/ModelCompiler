@@ -46,26 +46,26 @@ namespace SH_COMP
     }
   }
 
-  void MeshCompiler::ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept
-  {
-    if (scene.HasAnimations())
-    {
-      std::vector<AnimationAsset> anims(scene.mNumAnimations);
-      for (auto i{ 0 }; i < scene.mNumAnimations; ++i)
-      {
-        auto const& anim{ *scene.mAnimations[i] };
+  //void MeshCompiler::ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept
+  //{
+  //  if (scene.HasAnimations())
+  //  {
+  //    std::vector<AnimationAsset> anims(scene.mNumAnimations);
+  //    for (auto i{ 0 }; i < scene.mNumAnimations; ++i)
+  //    {
+  //      auto const& anim{ *scene.mAnimations[i] };
 
-        anims[i].name = anim.mName.C_Str();
+  //      anims[i].name = anim.mName.C_Str();
 
-        anims[i].duration = anim.mDuration;
-        anims[i].ticksPerSecond = anim.mTicksPerSecond;
+  //      anims[i].duration = anim.mDuration;
+  //      anims[i].ticksPerSecond = anim.mTicksPerSecond;
 
-        std::copy_n(anim.mChannels, anim.mNumChannels, anims[i].nodeChannels.data());
-        std::copy_n(anim.mMeshChannels, anim.mNumMeshChannels, anims[i].meshChannels.data());
-        std::copy_n(anim.mMorphMeshChannels, anim.mNumMorphMeshChannels, anims[i].morphMeshChannels.data());
-      }
-    }
-  }
+  //      std::copy_n(anim.mChannels, anim.mNumChannels, anims[i].nodeChannels.data());
+  //      std::copy_n(anim.mMeshChannels, anim.mNumMeshChannels, anims[i].meshChannels.data());
+  //      std::copy_n(anim.mMorphMeshChannels, anim.mNumMorphMeshChannels, anims[i].morphMeshChannels.data());
+  //    }
+  //  }
+  //}
 
   void MeshCompiler::GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept
   {
@@ -226,7 +226,9 @@ namespace SH_COMP
       return;
     }
 
-    //ExtractAnimations(*scene, anims);
+    std::vector<AnimationAsset> anims;
+
+    ParseAnimations(*scene, anims);
 
     ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig.root);
 
@@ -282,6 +284,71 @@ namespace SH_COMP
     if (parent)
     {
       parent->children.push_back(current);
+    }
+  }
+
+  void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimationAsset>& anims) noexcept
+  {
+    // Size and read for number of animation clips
+    anims.resize(scene.mNumAnimations);
+    for (auto i {0}; i < scene.mNumAnimations; ++i)
+    {
+	    auto const& animData = *scene.mAnimations[i];
+      auto& anim = anims[i];
+
+      anim.name = animData.mName.C_Str();
+      anim.duration = animData.mDuration;
+      anim.ticksPerSecond = animData.mTicksPerSecond;
+
+      // Size and read for number of animation frames
+      anim.nodeChannels.resize(animData.mNumChannels);
+      for (auto j {0}; j < animData.mNumChannels; ++j)
+      {
+        auto const& channelData = *animData.mChannels[j];
+        auto& node = anim.nodeChannels[j];
+
+        node.name = channelData.mNodeName.C_Str();
+
+        // Position Keys
+        node.positionKeys.resize(channelData.mNumPositionKeys);
+        for (auto k{0}; k < channelData.mNumPositionKeys; ++k)
+        {
+	        auto const& posKeyData = channelData.mPositionKeys[k];
+          auto& posKey = node.positionKeys[k];
+
+          posKey.time = posKeyData.mTime;
+          posKey.value.x = posKeyData.mValue.x;
+          posKey.value.y = posKeyData.mValue.y;
+          posKey.value.z = posKeyData.mValue.z;
+        }
+        
+        // Rotation Keys
+        node.rotationKeys.resize(channelData.mNumRotationKeys);
+        for (auto k{0}; k < channelData.mNumRotationKeys; ++k)
+        {
+	        auto const& posKeyData = channelData.mRotationKeys[k];
+          auto& posKey = node.rotationKeys[k];
+
+          posKey.time = posKeyData.mTime;
+          posKey.value.x = posKeyData.mValue.x;
+          posKey.value.y = posKeyData.mValue.y;
+          posKey.value.z = posKeyData.mValue.z;
+          posKey.value.w = posKeyData.mValue.w;
+        }
+        
+        // Scale Keys
+        node.scaleKeys.resize(channelData.mNumScalingKeys);
+        for (auto k{0}; k < channelData.mNumScalingKeys; ++k)
+        {
+	        auto const& posKeyData = channelData.mScalingKeys[k];
+          auto& posKey = node.scaleKeys[k];
+
+          posKey.time = posKeyData.mTime;
+          posKey.value.x = posKeyData.mValue.x;
+          posKey.value.y = posKeyData.mValue.y;
+          posKey.value.z = posKeyData.mValue.z;
+        }
+      }
     }
   }
 
