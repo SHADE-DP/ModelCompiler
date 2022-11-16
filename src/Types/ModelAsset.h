@@ -16,6 +16,7 @@
 #include <string>
 
 #include "MeshAsset.h"
+#include "AnimationAsset.h"
 
 namespace SH_COMP
 {
@@ -35,13 +36,18 @@ namespace SH_COMP
 	struct ModelAssetHeader
 	{
 		size_t meshCount;
+		size_t animCount;
 	};
 
 	struct ModelAsset
 	{
 		ModelAssetHeader header;
 		RigData rig;
-		std::vector<MeshDataHeader> headers;
+
+		std::vector<MeshDataHeader> meshHeaders;
+		std::vector<AnimDataHeader> animHeaders;
+		
 		std::vector<MeshData> meshes;
+		std::vector<AnimData> anims;
 	};
 }

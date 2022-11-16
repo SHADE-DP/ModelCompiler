@@ -148,17 +148,42 @@ namespace SH_COMP
 
   void MeshCompiler::BuildHeaders(ModelAsset& asset) noexcept
   {
-    for (auto const& mesh : asset.meshes)
+    // Mesh Headers
+    asset.meshHeaders.resize(asset.meshes.size());
+    asset.header.meshCount = asset.meshes.size();
+    for (auto i{0}; i < asset.header.meshCount; ++i)
     {
-      asset.headers.emplace_back();
-      auto& head = asset.headers.back();
+      auto const& mesh = asset.meshes[i];
+      auto& head = asset.meshHeaders[i];
 
       head.charCount = mesh.name.size();
       head.indexCount = mesh.indices.size();
       head.vertexCount = mesh.vertexPosition.size();
       head.boneCount = mesh.bonesInfo.size();
+    }
 
-      asset.header.meshCount++;
+    // Anim Headers
+    asset.animHeaders.resize(asset.anims.size());
+    asset.header.animCount = asset.anims.size();
+    for (auto i{0}; i < asset.header.animCount; ++i)
+    {
+      auto const& anim = asset.anims[i];
+      auto& head = asset.animHeaders[i];
+      
+      head.charCount = anim.name.size();
+      head.animNodeCount = anim.nodeChannels.size();
+      head.nodeHeaders.resize(head.animNodeCount);
+
+      for (auto j{0}; i < head.animNodeCount; ++j)
+      {
+	      auto const& animNode = anim.nodeChannels[j];
+        auto& nodeHeader = head.nodeHeaders[j];
+
+        nodeHeader.charCount = animNode.name.size();
+        nodeHeader.posKeyCount = animNode.positionKeys.size();
+        nodeHeader.rotKeyCount = animNode.rotationKeys.size();
+        nodeHeader.scaKeyCount = animNode.scaleKeys.size();
+      }
     }
   }
 
@@ -206,89 +231,25 @@ namespace SH_COMP
     );
   }
 
-  void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
+  void MeshCompiler::WriteAnimHeader(FileReference file, AnimDataHeader const& header)
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),
-      aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
-      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
-      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
-      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
-      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
-      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
-      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
-      | aiProcess_ValidateDataStructure
-    );
-
-    if (!scene || !scene->HasMeshes())
-    {
-      std::cout << "ERROR in GLTF::ASSIMP: " << aiImporter.GetErrorString() << "\nFile: " << path.string() << std::endl;
-      return;
-    }
-
-    std::vector<AnimationAsset> anims;
-
-    ParseAnimations(*scene, anims);
-
-    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig.root);
-
-    aiImporter.FreeScene();
   }
 
-  void MeshCompiler::CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept
+  void MeshCompiler::WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData& data)
   {
-    std::string newPath{ path.string().substr(0, path.string().find_last_of('.')) };
-    newPath += MODEL_EXTENSION;
-
-    std::ofstream file{ newPath, std::ios::out | std::ios::binary | std::ios::trunc };
-    if (!file.is_open())
-    {
-      std::cout << "Unable to open file for write: " << newPath << std::endl;
-      return;
-    }
-
-    file.write(
-      reinterpret_cast<char const*>(&asset.header),
-      sizeof(asset.header)
-    );
-
-    for (auto i {0}; i < asset.headers.size(); ++i)
-    {
-      WriteMeshHeader(file, asset.headers[i]);
-      WriteMeshData(file, asset.headers[i], asset.meshes[i]);
-    }
-
-    file.close();
   }
 
-  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigNode*& root) noexcept
+  void MeshCompiler::WriteHeaders(FileReference file, ModelConstRef asset)
   {
-    RigNode* start = new RigNode();
-
-    CopyNode(baseNode, start);
-
-    root = start->children[0];
   }
 
-  void MeshCompiler::CopyNode(aiNode const& source, RigNode* parent) noexcept
+  void MeshCompiler::WriteData(FileReference file, ModelConstRef asset)
   {
-    RigNode* current = new RigNode();
-    current->name = source.mName.C_Str();
-    std::memcpy(&current->transform, &source.mTransformation, sizeof(SHMat4));
-
-    for (auto i {0}; i < source.mNumChildren; ++i)
-    {
-      CopyNode(*source.mChildren[i], current);
-    }
-
-    if (parent)
-    {
-      parent->children.push_back(current);
-    }
   }
 
-  void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimationAsset>& anims) noexcept
+  void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
   {
+    
     // Size and read for number of animation clips
     anims.resize(scene.mNumAnimations);
     for (auto i {0}; i < scene.mNumAnimations; ++i)
@@ -349,6 +310,86 @@ namespace SH_COMP
           posKey.value.z = posKeyData.mValue.z;
         }
       }
+    }
+  }
+
+  void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
+  {
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),
+      aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
+      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
+      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
+      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
+      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
+      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
+      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
+      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      | aiProcess_ValidateDataStructure
+    );
+
+    if (!scene || !scene->HasMeshes())
+    {
+      std::cout << "ERROR in GLTF::ASSIMP: " << aiImporter.GetErrorString() << "\nFile: " << path.string() << std::endl;
+      return;
+    }
+
+    ParseAnimations(*scene, asset.anims);
+
+    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig.root);
+
+    aiImporter.FreeScene();
+  }
+
+  void MeshCompiler::CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept
+  {
+    std::string newPath{ path.string().substr(0, path.string().find_last_of('.')) };
+    newPath += MODEL_EXTENSION;
+
+    std::ofstream file{ newPath, std::ios::out | std::ios::binary | std::ios::trunc };
+    if (!file.is_open())
+    {
+      std::cout << "Unable to open file for write: " << newPath << std::endl;
+      return;
+    }
+
+    file.write(
+      reinterpret_cast<char const*>(&asset.header),
+      sizeof(asset.header)
+    );
+
+    // Write Meshes
+    for (auto i {0}; i < asset.meshHeaders.size(); ++i)
+    {
+      WriteMeshHeader(file, asset.meshHeaders[i]);
+      WriteMeshData(file, asset.meshHeaders[i], asset.meshes[i]);
+    }
+
+    file.close();
+  }
+
+  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigNode*& root) noexcept
+  {
+    RigNode* start = new RigNode();
+
+    CopyNode(baseNode, start);
+
+    root = start->children[0];
+  }
+
+  void MeshCompiler::CopyNode(aiNode const& source, RigNode* parent) noexcept
+  {
+    RigNode* current = new RigNode();
+    current->name = source.mName.C_Str();
+    std::memcpy(&current->transform, &source.mTransformation, sizeof(SHMat4));
+
+    for (auto i {0}; i < source.mNumChildren; ++i)
+    {
+      CopyNode(*source.mChildren[i], current);
+    }
+
+    if (parent)
+    {
+      parent->children.push_back(current);
     }
   }
 

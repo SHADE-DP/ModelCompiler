@@ -16,24 +16,66 @@
 
 namespace SH_COMP
 {
-	struct AnimationKey
+	enum class AnimationBehaviour : uint8_t
+	{
+		DEFAULT = 0x0,
+		CONSTNAT = 0x1,
+		LINEAR = 0x2,
+		REPEAT = 0x3
+	};
+
+	// Smallest data containers
+	struct PositionKey
+	{
+		float time;
+		SHVec3 value;
+	};
+	
+	struct RotationKey
 	{
 		float time;
 		SHVec4 value;
 	};
-	struct AnimationNode
+	
+	struct ScaleKey
 	{
-		std::string name;
-		std::vector<AnimationKey> positionKeys;
-		std::vector<AnimationKey> rotationKeys;
-		std::vector<AnimationKey> scaleKeys;
+		float time;
+		SHVec3 value;
 	};
 
-	struct AnimationAsset
+	// Headers for read/write
+	struct AnimNodeInfo
+	{
+		uint32_t charCount;
+		uint32_t posKeyCount;
+		uint32_t rotKeyCount;
+		uint32_t scaKeyCount;
+	};
+
+	struct AnimDataHeader
+	{
+		uint32_t charCount;
+		uint32_t animNodeCount;
+		std::vector<AnimNodeInfo> nodeHeaders;
+	};
+
+	// Main data containers
+	struct AnimNode
+	{
+		std::string name;
+		std::vector<PositionKey> positionKeys;
+		std::vector<RotationKey> rotationKeys;
+		std::vector<ScaleKey> scaleKeys;
+
+		AnimationBehaviour pre;
+		AnimationBehaviour post;
+	};
+
+	struct AnimData
 	{
 		std::string name;
 
-		std::vector<AnimationNode> nodeChannels;
+		std::vector<AnimNode> nodeChannels;
 		//std::vector<aiMeshAnim*> meshChannels;
 		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
 

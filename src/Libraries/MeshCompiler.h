@@ -26,25 +26,35 @@ namespace SH_COMP
   {
 
     using MeshVectorRef = std::vector<MeshData>&;
-    using AnimVectorRef = std::vector<AnimationAsset>&;
+    using AnimVectorRef = std::vector<AnimData>&;
+
+    using FileReference = std::ofstream&;
+    using ModelConstRef = ModelAsset const&;
+    using ModelRef = ModelAsset&;
 
     static Assimp::Importer aiImporter;
 
     static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept;
     //static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
-    static void BuildHeaders(ModelAsset& asset) noexcept;
+    static void BuildHeaders(ModelRef asset) noexcept;
 
-    static void WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header);
-    static void WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& asset);
+    static void WriteMeshHeader(FileReference file, MeshDataHeader const& header);
+    static void WriteMeshData(FileReference file, MeshDataHeader const& header, MeshData const& asset);
 
-    static void LoadFromFile(AssetPath path, ModelAsset& asset) noexcept;
-    static void CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept;
+    static void WriteAnimHeader(FileReference file, AnimDataHeader const& header);
+    static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData cosnt& data);
+
+    static void WriteHeaders(FileReference file, ModelConstRef asset);
+    static void WriteData(FileReference file, ModelConstRef asset);
+
+    static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
+    static void CompileMeshBinary(AssetPath path, ModelConstRef asset) noexcept;
 
     static void BuildArmature(aiNode const& node, RigNode*& root) noexcept;
     static void CopyNode(aiNode const& source, RigNode* parent) noexcept;
 
-    static void ParseAnimations(aiScene const& scene, std::vector<AnimationAsset>& anims) noexcept;
+    static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};
