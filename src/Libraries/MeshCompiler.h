@@ -43,7 +43,8 @@ namespace SH_COMP
     static void WriteMeshData(FileReference file, MeshDataHeader const& header, MeshData const& asset);
 
     static void WriteAnimHeader(FileReference file, AnimDataHeader const& header);
-    static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData cosnt& data);
+    static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data);
+    static void WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node);
 
     static void WriteHeaders(FileReference file, ModelConstRef asset);
     static void WriteData(FileReference file, ModelConstRef asset);

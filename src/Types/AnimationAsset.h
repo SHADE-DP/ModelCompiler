@@ -63,23 +63,24 @@ namespace SH_COMP
 	struct AnimNode
 	{
 		std::string name;
+		AnimationBehaviour pre;
+		AnimationBehaviour post;
+
 		std::vector<PositionKey> positionKeys;
 		std::vector<RotationKey> rotationKeys;
 		std::vector<ScaleKey> scaleKeys;
 
-		AnimationBehaviour pre;
-		AnimationBehaviour post;
 	};
 
 	struct AnimData
 	{
 		std::string name;
 
+		double duration;
+		double ticksPerSecond;
+
 		std::vector<AnimNode> nodeChannels;
 		//std::vector<aiMeshAnim*> meshChannels;
 		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
-
-		double duration;
-		double ticksPerSecond;
 	};
 }

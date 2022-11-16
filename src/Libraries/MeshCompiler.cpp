@@ -174,7 +174,7 @@ namespace SH_COMP
       head.animNodeCount = anim.nodeChannels.size();
       head.nodeHeaders.resize(head.animNodeCount);
 
-      for (auto j{0}; i < head.animNodeCount; ++j)
+      for (auto j{0}; j < head.animNodeCount; ++j)
       {
 	      auto const& animNode = anim.nodeChannels[j];
         auto& nodeHeader = head.nodeHeaders[j];
@@ -233,18 +233,104 @@ namespace SH_COMP
 
   void MeshCompiler::WriteAnimHeader(FileReference file, AnimDataHeader const& header)
   {
+    auto constexpr intSize = sizeof(uint32_t);
+
+    file.write(
+      reinterpret_cast<char const*>(&header.charCount),
+      intSize
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(&header.animNodeCount),
+      intSize
+    );
+    
+    file.write(
+      reinterpret_cast<char const*>(header.nodeHeaders.data()),
+      sizeof(AnimNodeInfo) * header.nodeHeaders.size()
+    );
   }
 
-  void MeshCompiler::WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData& data)
+  void MeshCompiler::WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data)
   {
+    file.write(
+      data.name.data(),
+      header.charCount
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(&data.duration),
+      sizeof(double)
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(&data.ticksPerSecond),
+      sizeof(double)
+    );
+
+		for (auto i{0}; i < header.animNodeCount; ++i)
+		{
+			WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
+		}
+  }
+
+  void MeshCompiler::WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node)
+  {
+    file.write(
+      node.name.data(),
+      info.charCount
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(&node.pre),
+      sizeof(AnimationBehaviour)
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(&node.post),
+      sizeof(AnimationBehaviour)
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(node.positionKeys.data()),
+      sizeof(PositionKey) * node.positionKeys.size()
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(node.rotationKeys.data()),
+      sizeof(RotationKey) * node.rotationKeys.size()
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(node.scaleKeys.data()),
+      sizeof(ScaleKey) * node.scaleKeys.size()
+    );
   }
 
   void MeshCompiler::WriteHeaders(FileReference file, ModelConstRef asset)
   {
+    for (auto const& header : asset.meshHeaders)
+    {
+	    WriteMeshHeader(file, header);
+    }
+
+    for (auto  const& header : asset.animHeaders)
+    {
+	    WriteAnimHeader(file, header);
+    }
   }
 
   void MeshCompiler::WriteData(FileReference file, ModelConstRef asset)
   {
+    for (auto i {0}; i < asset.meshes.size(); ++i)
+    {
+	    WriteMeshData(file, asset.meshHeaders[i], asset.meshes[i]);
+    }
+    
+    for (auto i {0}; i < asset.anims.size(); ++i)
+    {
+	    WriteAnimData(file, asset.animHeaders[i], asset.anims[i]);
+    }
   }
 
   void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
@@ -357,12 +443,8 @@ namespace SH_COMP
       sizeof(asset.header)
     );
 
-    // Write Meshes
-    for (auto i {0}; i < asset.meshHeaders.size(); ++i)
-    {
-      WriteMeshHeader(file, asset.meshHeaders[i]);
-      WriteMeshData(file, asset.meshHeaders[i], asset.meshes[i]);
-    }
+    WriteHeaders(file, asset);
+    WriteData(file, asset);
 
     file.close();
   }
