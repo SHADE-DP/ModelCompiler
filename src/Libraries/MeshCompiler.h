@@ -33,9 +33,9 @@ namespace SH_COMP
     using ModelRef = ModelAsset&;
 
     static Assimp::Importer aiImporter;
+    static uint32_t rigNodeIDCounter;
 
-    static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept;
-    //static void ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept;
+    static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(ModelRef asset) noexcept;
 
@@ -52,8 +52,7 @@ namespace SH_COMP
     static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
     static void CompileMeshBinary(AssetPath path, ModelConstRef asset) noexcept;
 
-    static void BuildArmature(aiNode const& node, RigNode*& root) noexcept;
-    static void CopyNode(aiNode const& source, RigNode* parent) noexcept;
+    static void BuildArmature(aiNode const& node, RigData& rig) noexcept;
 
     static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
   public:

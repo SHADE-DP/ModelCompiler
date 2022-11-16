@@ -13,25 +13,13 @@
 #pragma once
 
 #include <vector>
-#include <string>
 
 #include "MeshAsset.h"
 #include "AnimationAsset.h"
+#include "RigAsset.h"
 
 namespace SH_COMP
 {
-	struct RigNode
-	{
-		std::string name;
-		uint32_t id;
-		SHMat4 transform;
-		std::vector<RigNode*> children;
-	};
-
-	struct RigData
-	{
-		RigNode* root;
-	};
 
 	struct ModelAssetHeader
 	{

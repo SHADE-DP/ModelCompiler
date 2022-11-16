@@ -22,8 +22,9 @@ namespace SH_COMP
 {
 
   Assimp::Importer MeshCompiler::aiImporter;
+  uint32_t MeshCompiler::rigNodeIDCounter { 0 };
 
-  void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigNode*& root) noexcept
+  void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept
   {
     for (size_t i{ 0 }; i < node.mNumMeshes; ++i)
     {
@@ -35,37 +36,16 @@ namespace SH_COMP
 
     if (std::strcmp(node.mName.C_Str(), "Armature") == 0)
     {
-      BuildArmature(node, root);
+      BuildArmature(node, rig.root);
     }
     else
     {
       for (size_t i{ 0 }; i < node.mNumChildren; ++i)
       {
-        ProcessNode(*node.mChildren[i], scene, meshes, root);
+        ProcessNode(*node.mChildren[i], scene, meshes, rig);
       }
     }
   }
-
-  //void MeshCompiler::ExtractAnimations(aiScene const& scene, AnimVectorRef anims) noexcept
-  //{
-  //  if (scene.HasAnimations())
-  //  {
-  //    std::vector<AnimationAsset> anims(scene.mNumAnimations);
-  //    for (auto i{ 0 }; i < scene.mNumAnimations; ++i)
-  //    {
-  //      auto const& anim{ *scene.mAnimations[i] };
-
-  //      anims[i].name = anim.mName.C_Str();
-
-  //      anims[i].duration = anim.mDuration;
-  //      anims[i].ticksPerSecond = anim.mTicksPerSecond;
-
-  //      std::copy_n(anim.mChannels, anim.mNumChannels, anims[i].nodeChannels.data());
-  //      std::copy_n(anim.mMeshChannels, anim.mNumMeshChannels, anims[i].meshChannels.data());
-  //      std::copy_n(anim.mMorphMeshChannels, anim.mNumMorphMeshChannels, anims[i].morphMeshChannels.data());
-  //    }
-  //  }
-  //}
 
   void MeshCompiler::GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept
   {
@@ -335,7 +315,6 @@ namespace SH_COMP
 
   void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
   {
-    
     // Size and read for number of animation clips
     anims.resize(scene.mNumAnimations);
     for (auto i {0}; i < scene.mNumAnimations; ++i)
@@ -421,7 +400,7 @@ namespace SH_COMP
 
     ParseAnimations(*scene, asset.anims);
 
-    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig.root);
+    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig);
 
     aiImporter.FreeScene();
   }
@@ -449,37 +428,22 @@ namespace SH_COMP
     file.close();
   }
 
-  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigNode*& root) noexcept
+  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigData& rig) noexcept
   {
-    RigNode* start = new RigNode();
+    std::queue<aiNode const*> nodesQueue;
+    nodesQueue.push(&baseNode);
 
-    CopyNode(baseNode, start);
+    RigNode* parent = nullptr;
 
-    root = start->children[0];
-  }
-
-  void MeshCompiler::CopyNode(aiNode const& source, RigNode* parent) noexcept
-  {
-    RigNode* current = new RigNode();
-    current->name = source.mName.C_Str();
-    std::memcpy(&current->transform, &source.mTransformation, sizeof(SHMat4));
-
-    for (auto i {0}; i < source.mNumChildren; ++i)
+    while(!nodesQueue.empty())
     {
-      CopyNode(*source.mChildren[i], current);
-    }
 
-    if (parent)
-    {
-      parent->children.push_back(current);
     }
   }
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
   {
     auto const asset = new ModelAsset();
-
-    asset->rig.root = nullptr;
 
     LoadFromFile(path, *asset);
     BuildHeaders(*asset);
