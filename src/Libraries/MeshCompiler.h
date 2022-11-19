@@ -1,5 +1,5 @@
 /*************************************************************************//**
- * \file    SHMeshCompiler.h
+ * \file    MeshCompiler.h
  * \author  Loh Xiao Qi
  * \date    30 September 2022
  * \brief   Library to write data in MeshAsset into binary file for faster
@@ -28,8 +28,6 @@ namespace SH_COMP
     using MeshVectorRef = std::vector<MeshData>&;
     using AnimVectorRef = std::vector<AnimData>&;
 
-    using FileReference = std::ofstream&;
-    using ModelConstRef = ModelAsset const&;
     using ModelRef = ModelAsset&;
 
     static Assimp::Importer aiImporter;
@@ -39,22 +37,12 @@ namespace SH_COMP
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(ModelRef asset) noexcept;
 
-    static void WriteMeshHeader(FileReference file, MeshDataHeader const& header);
-    static void WriteMeshData(FileReference file, MeshDataHeader const& header, MeshData const& asset);
-
-    static void WriteAnimHeader(FileReference file, AnimDataHeader const& header);
-    static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data);
-    static void WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node);
-
-    static void WriteHeaders(FileReference file, ModelConstRef asset);
-    static void WriteData(FileReference file, ModelConstRef asset);
-
-    static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
-    static void CompileMeshBinary(AssetPath path, ModelConstRef asset) noexcept;
-
-    static void BuildArmature(aiNode const& node, RigData& rig) noexcept;
-
+  	static void BuildArmature(aiNode const& node, RigData& rig) noexcept;
+    static uint32_t RegisterNewNode(aiNode const& node, RigData& rig) noexcept;
     static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
+
+  	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
+
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};

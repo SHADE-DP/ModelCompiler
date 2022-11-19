@@ -358,3 +358,5 @@ Premake/
 *.sln
 
 Dependencies/
+
+*.shmodel

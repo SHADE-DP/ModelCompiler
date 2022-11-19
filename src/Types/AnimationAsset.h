@@ -19,7 +19,7 @@ namespace SH_COMP
 	enum class AnimationBehaviour : uint8_t
 	{
 		DEFAULT = 0x0,
-		CONSTNAT = 0x1,
+		CONSTANT = 0x1,
 		LINEAR = 0x2,
 		REPEAT = 0x3
 	};

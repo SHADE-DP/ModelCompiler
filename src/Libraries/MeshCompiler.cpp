@@ -11,12 +11,13 @@
  * of DigiPen Institute of Technology is prohibited.
  *****************************************************************************/
 #include "MeshCompiler.h"
+#include "MeshWriter.h"
 #include <assimp/postprocess.h>
 
 #include <fstream>
 #include <iostream>
 
-#include <queue>
+#include <stack>
 
 namespace SH_COMP
 {
@@ -26,23 +27,20 @@ namespace SH_COMP
 
   void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept
   {
-    for (size_t i{ 0 }; i < node.mNumMeshes; ++i)
+    for (auto i{0}; i < node.mNumChildren; ++i)
     {
-      aiMesh* mesh = scene.mMeshes[node.mMeshes[i]];
-      meshes.emplace_back();
-      GetMesh(*mesh, meshes.back());
-      meshes.back().name = node.mName.C_Str();
-    }
+	    auto const& child {*node.mChildren[i]};
 
-    if (std::strcmp(node.mName.C_Str(), "Armature") == 0)
-    {
-      BuildArmature(node, rig.root);
-    }
-    else
-    {
-      for (size_t i{ 0 }; i < node.mNumChildren; ++i)
+      if (child.mNumMeshes > 0)
       {
-        ProcessNode(*node.mChildren[i], scene, meshes, rig);
+	      aiMesh* mesh = scene.mMeshes[child.mMeshes[0]];
+	      meshes.emplace_back();
+	      GetMesh(*mesh, meshes.back());
+	      meshes.back().name = child.mName.C_Str();
+      }
+      else
+      {
+				BuildArmature(child, rig);
       }
     }
   }
@@ -167,150 +165,18 @@ namespace SH_COMP
     }
   }
 
-  void MeshCompiler::WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header)
+  uint32_t MeshCompiler::RegisterNewNode(aiNode const& node, RigData& rig) noexcept
   {
-    file.write(
-      reinterpret_cast<char const*>(&header),
-      sizeof(MeshDataHeader)
-    );
-  }
+    auto const result = rigNodeIDCounter++;
 
-  void MeshCompiler::WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& asset)
-  {
-    auto const vertexVec3Byte{ sizeof(SHVec3) * header.vertexCount };
-    auto const vertexVec2Byte{ sizeof(SHVec2) * header.vertexCount };
-
-    file.write(
-      asset.name.c_str(),
-      header.charCount
+    rig.nodeDataCollection[result].name = node.mName.C_Str();
+    std::memcpy(
+      &rig.nodeDataCollection[result].transform,
+      &node.mTransformation,
+      sizeof(SHMat4)
     );
 
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexPosition.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexTangent.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexNormal.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.texCoords.data()),
-      vertexVec2Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.indices.data()),
-      sizeof(uint32_t) * header.indexCount
-    );
-  }
-
-  void MeshCompiler::WriteAnimHeader(FileReference file, AnimDataHeader const& header)
-  {
-    auto constexpr intSize = sizeof(uint32_t);
-
-    file.write(
-      reinterpret_cast<char const*>(&header.charCount),
-      intSize
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&header.animNodeCount),
-      intSize
-    );
-    
-    file.write(
-      reinterpret_cast<char const*>(header.nodeHeaders.data()),
-      sizeof(AnimNodeInfo) * header.nodeHeaders.size()
-    );
-  }
-
-  void MeshCompiler::WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data)
-  {
-    file.write(
-      data.name.data(),
-      header.charCount
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&data.duration),
-      sizeof(double)
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&data.ticksPerSecond),
-      sizeof(double)
-    );
-
-		for (auto i{0}; i < header.animNodeCount; ++i)
-		{
-			WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
-		}
-  }
-
-  void MeshCompiler::WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node)
-  {
-    file.write(
-      node.name.data(),
-      info.charCount
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&node.pre),
-      sizeof(AnimationBehaviour)
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&node.post),
-      sizeof(AnimationBehaviour)
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(node.positionKeys.data()),
-      sizeof(PositionKey) * node.positionKeys.size()
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(node.rotationKeys.data()),
-      sizeof(RotationKey) * node.rotationKeys.size()
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(node.scaleKeys.data()),
-      sizeof(ScaleKey) * node.scaleKeys.size()
-    );
-  }
-
-  void MeshCompiler::WriteHeaders(FileReference file, ModelConstRef asset)
-  {
-    for (auto const& header : asset.meshHeaders)
-    {
-	    WriteMeshHeader(file, header);
-    }
-
-    for (auto  const& header : asset.animHeaders)
-    {
-	    WriteAnimHeader(file, header);
-    }
-  }
-
-  void MeshCompiler::WriteData(FileReference file, ModelConstRef asset)
-  {
-    for (auto i {0}; i < asset.meshes.size(); ++i)
-    {
-	    WriteMeshData(file, asset.meshHeaders[i], asset.meshes[i]);
-    }
-    
-    for (auto i {0}; i < asset.anims.size(); ++i)
-    {
-	    WriteAnimData(file, asset.animHeaders[i], asset.anims[i]);
-    }
+    return result;
   }
 
   void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
@@ -352,27 +218,27 @@ namespace SH_COMP
         node.rotationKeys.resize(channelData.mNumRotationKeys);
         for (auto k{0}; k < channelData.mNumRotationKeys; ++k)
         {
-	        auto const& posKeyData = channelData.mRotationKeys[k];
-          auto& posKey = node.rotationKeys[k];
+	        auto const& rotKeyData = channelData.mRotationKeys[k];
+          auto& rotKey = node.rotationKeys[k];
 
-          posKey.time = posKeyData.mTime;
-          posKey.value.x = posKeyData.mValue.x;
-          posKey.value.y = posKeyData.mValue.y;
-          posKey.value.z = posKeyData.mValue.z;
-          posKey.value.w = posKeyData.mValue.w;
+          rotKey.time = rotKeyData.mTime;
+          rotKey.value.x = rotKeyData.mValue.x;
+          rotKey.value.y = rotKeyData.mValue.y;
+          rotKey.value.z = rotKeyData.mValue.z;
+          rotKey.value.w = rotKeyData.mValue.w;
         }
         
         // Scale Keys
         node.scaleKeys.resize(channelData.mNumScalingKeys);
         for (auto k{0}; k < channelData.mNumScalingKeys; ++k)
         {
-	        auto const& posKeyData = channelData.mScalingKeys[k];
-          auto& posKey = node.scaleKeys[k];
+	        auto const& scaKeyData = channelData.mScalingKeys[k];
+          auto& scaKey = node.scaleKeys[k];
 
-          posKey.time = posKeyData.mTime;
-          posKey.value.x = posKeyData.mValue.x;
-          posKey.value.y = posKeyData.mValue.y;
-          posKey.value.z = posKeyData.mValue.z;
+          scaKey.time = scaKeyData.mTime;
+          scaKey.value.x = scaKeyData.mValue.x;
+          scaKey.value.y = scaKeyData.mValue.y;
+          scaKey.value.z = scaKeyData.mValue.z;
         }
       }
     }
@@ -380,16 +246,17 @@ namespace SH_COMP
 
   void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),
-      aiProcess_Triangulate                 // Make sure we get triangles rather than nvert polygons
-      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
-      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
-      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
-      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
-      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
-      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
-      | aiProcess_ValidateDataStructure
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),0
+      //aiProcess_Triangulate           // Make sure we get triangles rather than nvert polygons
+      //| aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
+      //| aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
+      //| aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
+      //| aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
+      //| aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
+      //| aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
+      //| aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      //| aiProcess_ValidateDataStructure     // checks all bones, animations and vertices are linked correctly
+      //| aiProcess_LimitBoneWeights          // Limit number of bones effect vertices to 4
     );
 
     if (!scene || !scene->HasMeshes())
@@ -398,46 +265,36 @@ namespace SH_COMP
       return;
     }
 
-    ParseAnimations(*scene, asset.anims);
-
     ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig);
+
+    ParseAnimations(*scene, asset.anims);
 
     aiImporter.FreeScene();
   }
 
-  void MeshCompiler::CompileMeshBinary(AssetPath path, ModelAsset const& asset) noexcept
-  {
-    std::string newPath{ path.string().substr(0, path.string().find_last_of('.')) };
-    newPath += MODEL_EXTENSION;
-
-    std::ofstream file{ newPath, std::ios::out | std::ios::binary | std::ios::trunc };
-    if (!file.is_open())
-    {
-      std::cout << "Unable to open file for write: " << newPath << std::endl;
-      return;
-    }
-
-    file.write(
-      reinterpret_cast<char const*>(&asset.header),
-      sizeof(asset.header)
-    );
-
-    WriteHeaders(file, asset);
-    WriteData(file, asset);
-
-    file.close();
-  }
 
   void MeshCompiler::BuildArmature(aiNode const& baseNode, RigData& rig) noexcept
   {
-    std::queue<aiNode const*> nodesQueue;
-    nodesQueue.push(&baseNode);
-
-    RigNode* parent = nullptr;
+    std::stack<std::pair<RigNode*, aiNode const*>> nodesQueue;
+    rig.root = new RigNode();
+    rig.root->idRef = RegisterNewNode(**baseNode.mChildren, rig);
+    nodesQueue.push({rig.root, *baseNode.mChildren});
 
     while(!nodesQueue.empty())
     {
+      auto& rigNode { *nodesQueue.top().first };
+      auto const& dataNode { *nodesQueue.top().second };
+      nodesQueue.pop();
 
+      for (auto i{ 0 }; i < dataNode.mNumChildren; ++i)
+      {
+        rigNode.children.push_back(new RigNode());
+        rigNode.children[i]->idRef = RegisterNewNode(*dataNode.mChildren[i], rig);
+        nodesQueue.push({
+        	rigNode.children[i],
+          dataNode.mChildren[i]
+        });
+      }
     }
   }
 
@@ -447,7 +304,7 @@ namespace SH_COMP
 
     LoadFromFile(path, *asset);
     BuildHeaders(*asset);
-    CompileMeshBinary(path, *asset);
+    MeshWriter::CompileMeshBinary(path, *asset);
 
     delete asset;
   }

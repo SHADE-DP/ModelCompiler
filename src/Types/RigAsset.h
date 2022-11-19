@@ -23,12 +23,12 @@ namespace SH_COMP
 	struct RigNode
 	{
 		uint32_t idRef;
-		std::vector<uint32_t> children;
+		std::vector<RigNode*> children;
 	};
 
 	struct RigData
 	{
 		std::map<uint32_t, RigNodeData> nodeDataCollection;
-		RigNode root;
+		RigNode* root;
 	};
 }
