@@ -27,6 +27,10 @@ namespace SH_COMP
     static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data);
     static void WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node);
 
+    static void WriteRigHeader(FileReference file, RigDataHeader const& header);
+    static void WriteRigData(FileReference file,  RigDataHeader const& header, std::map<uint32_t, RigNodeData> const& data);
+    static void WriteRigNodes(FileReference file,  RigDataHeader const& header, RigNode const* root);
+
     static void WriteHeaders(FileReference file, ModelConstRef asset);
     static void WriteData(FileReference file, ModelConstRef asset);
 

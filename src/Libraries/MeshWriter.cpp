@@ -11,10 +11,10 @@
 #include "MeshWriter.h"
 #include <fstream>
 #include <iostream>
+#include <queue>
 
 namespace SH_COMP
 {
-	
   void MeshWriter::WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header)
   {
     file.write(
@@ -135,7 +135,65 @@ namespace SH_COMP
     );
   }
 
-  
+  void MeshWriter::WriteRigHeader(FileReference file, RigDataHeader const& header)
+  {
+    file.write(
+      reinterpret_cast<char const*>(header.nodeCount),
+      sizeof(uint32_t)
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(header.charCounts.data()),
+      sizeof(uint32_t) * header.nodeCount
+    );
+  }
+
+  void MeshWriter::WriteRigData(FileReference file, RigDataHeader const& header,
+	  std::map<uint32_t, RigNodeData> const& data)
+  {
+    for (auto i {0}; i < header.nodeCount; ++i)
+    {
+	    file.write(
+        data.at(i).name.data(),
+        header.charCounts[i]
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(&data.at(i).transform),
+        sizeof(SHMat4)
+      );
+    }
+  }
+
+  void MeshWriter::WriteRigNodes(FileReference file, RigDataHeader const& header, RigNode const* root)
+  {
+    std::queue<RigNode const*> nodeQueue;
+    nodeQueue.push(root);
+
+    while(!nodeQueue.empty())
+    {
+      auto const node = nodeQueue.front();
+      nodeQueue.pop();
+
+	    file.write(
+        reinterpret_cast<char const*>(&node->idRef),
+        sizeof(uint32_t)
+      );
+
+      uint32_t const size { static_cast<uint32_t>(node->children.size()) };
+      
+	    file.write(
+        reinterpret_cast<char const*>(&size),
+        sizeof(uint32_t)
+      );
+
+      for (auto const& child : node->children)
+      {
+	      nodeQueue.push(child);
+      }
+    }
+  }
+
   void MeshWriter::WriteHeaders(FileReference file, ModelConstRef asset)
   {
     for (auto const& header : asset.meshHeaders)
