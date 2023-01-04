@@ -17,10 +17,23 @@
 #include <fstream>
 #include <iostream>
 
-#include <stack>
+#include <queue>
 
 namespace SH_COMP
 {
+
+  SHMat4 aiTransformToMat4(aiMatrix4x4 const& inMatrx)
+  {
+	  SHMat4 result;
+
+    std::memcpy(
+      reinterpret_cast<char*>(&result),
+      reinterpret_cast<char const*>(&inMatrx),
+      sizeof(result)
+    );
+
+    return result;
+  }
 
   Assimp::Importer MeshCompiler::aiImporter;
   uint32_t MeshCompiler::rigNodeIDCounter { 0 };
@@ -165,20 +178,6 @@ namespace SH_COMP
     }
   }
 
-  uint32_t MeshCompiler::RegisterNewNode(aiNode const& node, RigData& rig) noexcept
-  {
-    auto const result = rigNodeIDCounter++;
-
-    rig.nodeDataCollection[result].name = node.mName.C_Str();
-    std::memcpy(
-      &rig.nodeDataCollection[result].transform,
-      &node.mTransformation,
-      sizeof(SHMat4)
-    );
-
-    return result;
-  }
-
   void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
   {
     // Size and read for number of animation clips
@@ -275,26 +274,15 @@ namespace SH_COMP
 
   void MeshCompiler::BuildArmature(aiNode const& baseNode, RigData& rig) noexcept
   {
-    std::stack<std::pair<RigNode*, aiNode const*>> nodesQueue;
-    rig.root = new RigNode();
-    rig.root->idRef = RegisterNewNode(**baseNode.mChildren, rig);
-    nodesQueue.push({rig.root, *baseNode.mChildren});
+    std::queue<std::pair<RigNodeData*, aiNode const&>> nodeQueue;
+    auto& collection = rig.nodeDataCollection;
+    collection.clear();
 
-    while(!nodesQueue.empty())
+    //TODO FINISH BFS COPY
+
+    while(!nodeQueue.empty())
     {
-      auto& rigNode { *nodesQueue.top().first };
-      auto const& dataNode { *nodesQueue.top().second };
-      nodesQueue.pop();
-
-      for (auto i{ 0 }; i < dataNode.mNumChildren; ++i)
-      {
-        rigNode.children.push_back(new RigNode());
-        rigNode.children[i]->idRef = RegisterNewNode(*dataNode.mChildren[i], rig);
-        nodesQueue.push({
-        	rigNode.children[i],
-          dataNode.mChildren[i]
-        });
-      }
+	    
     }
   }
 

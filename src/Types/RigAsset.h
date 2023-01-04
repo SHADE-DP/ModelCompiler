@@ -16,6 +16,9 @@ namespace SH_COMP
 
 	struct RigNodeData
 	{
+		RigNodeData(const char* cstr, SHMat4 mat)
+			:name {cstr}, transform{mat} {}
+
 		std::string name;
 		SHMat4 transform;
 	};
@@ -28,6 +31,7 @@ namespace SH_COMP
 
 	struct RigData
 	{
+		RigDataHeader header;
 		std::map<uint32_t, RigNodeData> nodeDataCollection;
 		RigNode* root;
 	};

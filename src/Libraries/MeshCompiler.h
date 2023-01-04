@@ -38,7 +38,6 @@ namespace SH_COMP
     static void BuildHeaders(ModelRef asset) noexcept;
 
   	static void BuildArmature(aiNode const& node, RigData& rig) noexcept;
-    static uint32_t RegisterNewNode(aiNode const& node, RigData& rig) noexcept;
     static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
 
   	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
