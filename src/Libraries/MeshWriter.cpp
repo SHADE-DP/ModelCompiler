@@ -149,7 +149,7 @@ namespace SH_COMP
   }
 
   void MeshWriter::WriteRigData(FileReference file, RigDataHeader const& header,
-	  std::map<uint32_t, RigNodeData> const& data)
+	  RigData const& data)
   {
     for (auto i {0}; i < header.nodeCount; ++i)
     {

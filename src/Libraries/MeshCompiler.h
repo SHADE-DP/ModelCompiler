@@ -30,15 +30,20 @@ namespace SH_COMP
 
     using ModelRef = ModelAsset&;
 
+    using AiNodeConstPtr = aiNode const*;
+
     static Assimp::Importer aiImporter;
     static uint32_t rigNodeIDCounter;
 
-    static void ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept;
+    static void ProcessNode(AiNodeConstPtr node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept;
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(ModelRef asset) noexcept;
 
-  	static void BuildArmature(aiNode const& node, RigData& rig) noexcept;
+    static void BuildArmature(AiNodeConstPtr node, RigData& rig) noexcept;
     static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
+
+    static std::pair<RigNodeData*, AiNodeConstPtr> PairHelper(AiNodeConstPtr node);
+    static RigNodeData* NewNode(AiNodeConstPtr inNode);
 
   	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
 

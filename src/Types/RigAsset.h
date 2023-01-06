@@ -21,18 +21,13 @@ namespace SH_COMP
 
 		std::string name;
 		SHMat4 transform;
-	};
-
-	struct RigNode
-	{
-		uint32_t idRef;
-		std::vector<RigNode*> children;
+		std::vector<RigNodeData*> children;
 	};
 
 	struct RigData
 	{
 		RigDataHeader header;
-		std::map<uint32_t, RigNodeData> nodeDataCollection;
-		RigNode* root;
+		// std::map<uint32_t, RigNodeData> nodeDataCollection;
+		RigNodeData* root;
 	};
 }

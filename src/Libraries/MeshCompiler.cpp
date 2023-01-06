@@ -27,8 +27,8 @@ namespace SH_COMP
 	  SHMat4 result;
 
     std::memcpy(
-      reinterpret_cast<char*>(&result),
-      reinterpret_cast<char const*>(&inMatrx),
+      &result,
+      &inMatrx,
       sizeof(result)
     );
 
@@ -38,22 +38,22 @@ namespace SH_COMP
   Assimp::Importer MeshCompiler::aiImporter;
   uint32_t MeshCompiler::rigNodeIDCounter { 0 };
 
-  void MeshCompiler::ProcessNode(aiNode const& node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept
+  void MeshCompiler::ProcessNode(AiNodeConstPtr node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept
   {
-    for (auto i{0}; i < node.mNumChildren; ++i)
+    for (auto i{ 0 }; i < node->mNumChildren; ++i)
     {
-	    auto const& child {*node.mChildren[i]};
+      auto child{ node->mChildren[i] };
 
-      if (child.mNumMeshes > 0)
+      if (child->mNumMeshes > 0)
       {
-	      aiMesh* mesh = scene.mMeshes[child.mMeshes[0]];
-	      meshes.emplace_back();
-	      GetMesh(*mesh, meshes.back());
-	      meshes.back().name = child.mName.C_Str();
+        aiMesh* mesh = scene.mMeshes[child->mMeshes[0]];
+        meshes.emplace_back();
+        GetMesh(*mesh, meshes.back());
+        meshes.back().name = child->mName.C_Str();
       }
       else
       {
-				BuildArmature(child, rig);
+        BuildArmature(child, rig);
       }
     }
   }
@@ -68,7 +68,7 @@ namespace SH_COMP
     meshData.bonesInfo.resize(mesh.mNumBones);
     meshData.bones.resize(mesh.mNumBones);
 
-    for (auto i {0}; i < mesh.mNumBones; ++i)
+    for (auto i{ 0 }; i < mesh.mNumBones; ++i)
     {
       auto const& bone = *mesh.mBones[i];
       auto& newBone = meshData.bones[i];
@@ -80,7 +80,7 @@ namespace SH_COMP
       std::memcpy(&newBone.offset, &bone.mOffsetMatrix, sizeof(SHMat4));
 
       newBone.weights.resize(bone.mNumWeights);
-      for (auto j {0}; j < bone.mNumWeights; ++j)
+      for (auto j{ 0 }; j < bone.mNumWeights; ++j)
       {
         newBone.weights[j].index = bone.mWeights[j].mVertexId;
         newBone.weights[j].weight = bone.mWeights[j].mWeight;
@@ -142,7 +142,7 @@ namespace SH_COMP
     // Mesh Headers
     asset.meshHeaders.resize(asset.meshes.size());
     asset.header.meshCount = asset.meshes.size();
-    for (auto i{0}; i < asset.header.meshCount; ++i)
+    for (auto i{ 0 }; i < asset.header.meshCount; ++i)
     {
       auto const& mesh = asset.meshes[i];
       auto& head = asset.meshHeaders[i];
@@ -156,18 +156,18 @@ namespace SH_COMP
     // Anim Headers
     asset.animHeaders.resize(asset.anims.size());
     asset.header.animCount = asset.anims.size();
-    for (auto i{0}; i < asset.header.animCount; ++i)
+    for (auto i{ 0 }; i < asset.header.animCount; ++i)
     {
       auto const& anim = asset.anims[i];
       auto& head = asset.animHeaders[i];
-      
+
       head.charCount = anim.name.size();
       head.animNodeCount = anim.nodeChannels.size();
       head.nodeHeaders.resize(head.animNodeCount);
 
-      for (auto j{0}; j < head.animNodeCount; ++j)
+      for (auto j{ 0 }; j < head.animNodeCount; ++j)
       {
-	      auto const& animNode = anim.nodeChannels[j];
+        auto const& animNode = anim.nodeChannels[j];
         auto& nodeHeader = head.nodeHeaders[j];
 
         nodeHeader.charCount = animNode.name.size();
@@ -182,9 +182,9 @@ namespace SH_COMP
   {
     // Size and read for number of animation clips
     anims.resize(scene.mNumAnimations);
-    for (auto i {0}; i < scene.mNumAnimations; ++i)
+    for (auto i{ 0 }; i < scene.mNumAnimations; ++i)
     {
-	    auto const& animData = *scene.mAnimations[i];
+      auto const& animData = *scene.mAnimations[i];
       auto& anim = anims[i];
 
       anim.name = animData.mName.C_Str();
@@ -193,7 +193,7 @@ namespace SH_COMP
 
       // Size and read for number of animation frames
       anim.nodeChannels.resize(animData.mNumChannels);
-      for (auto j {0}; j < animData.mNumChannels; ++j)
+      for (auto j{ 0 }; j < animData.mNumChannels; ++j)
       {
         auto const& channelData = *animData.mChannels[j];
         auto& node = anim.nodeChannels[j];
@@ -202,9 +202,9 @@ namespace SH_COMP
 
         // Position Keys
         node.positionKeys.resize(channelData.mNumPositionKeys);
-        for (auto k{0}; k < channelData.mNumPositionKeys; ++k)
+        for (auto k{ 0 }; k < channelData.mNumPositionKeys; ++k)
         {
-	        auto const& posKeyData = channelData.mPositionKeys[k];
+          auto const& posKeyData = channelData.mPositionKeys[k];
           auto& posKey = node.positionKeys[k];
 
           posKey.time = posKeyData.mTime;
@@ -212,12 +212,12 @@ namespace SH_COMP
           posKey.value.y = posKeyData.mValue.y;
           posKey.value.z = posKeyData.mValue.z;
         }
-        
+
         // Rotation Keys
         node.rotationKeys.resize(channelData.mNumRotationKeys);
-        for (auto k{0}; k < channelData.mNumRotationKeys; ++k)
+        for (auto k{ 0 }; k < channelData.mNumRotationKeys; ++k)
         {
-	        auto const& rotKeyData = channelData.mRotationKeys[k];
+          auto const& rotKeyData = channelData.mRotationKeys[k];
           auto& rotKey = node.rotationKeys[k];
 
           rotKey.time = rotKeyData.mTime;
@@ -226,12 +226,12 @@ namespace SH_COMP
           rotKey.value.z = rotKeyData.mValue.z;
           rotKey.value.w = rotKeyData.mValue.w;
         }
-        
+
         // Scale Keys
         node.scaleKeys.resize(channelData.mNumScalingKeys);
-        for (auto k{0}; k < channelData.mNumScalingKeys; ++k)
+        for (auto k{ 0 }; k < channelData.mNumScalingKeys; ++k)
         {
-	        auto const& scaKeyData = channelData.mScalingKeys[k];
+          auto const& scaKeyData = channelData.mScalingKeys[k];
           auto& scaKey = node.scaleKeys[k];
 
           scaKey.time = scaKeyData.mTime;
@@ -243,9 +243,19 @@ namespace SH_COMP
     }
   }
 
+  std::pair<RigNodeData*, aiNode const*> MeshCompiler::PairHelper(AiNodeConstPtr node)
+  {
+    return std::make_pair(NewNode(node), node);
+  }
+
+  RigNodeData* MeshCompiler::NewNode(AiNodeConstPtr inNode)
+  {
+    return new RigNodeData(inNode->mName.C_Str(), aiTransformToMat4(inNode->mTransformation));
+  }
+
   void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(),0
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(), 0
       //aiProcess_Triangulate           // Make sure we get triangles rather than nvert polygons
       //| aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
       //| aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
@@ -264,26 +274,38 @@ namespace SH_COMP
       return;
     }
 
-    ProcessNode(*scene->mRootNode, *scene, asset.meshes, asset.rig);
+    ProcessNode(scene->mRootNode, *scene, asset.meshes, asset.rig);
 
     ParseAnimations(*scene, asset.anims);
 
     aiImporter.FreeScene();
   }
 
-
-  void MeshCompiler::BuildArmature(aiNode const& baseNode, RigData& rig) noexcept
+  void MeshCompiler::BuildArmature(AiNodeConstPtr baseNode, RigData& rig) noexcept
   {
-    std::queue<std::pair<RigNodeData*, aiNode const&>> nodeQueue;
-    auto& collection = rig.nodeDataCollection;
-    collection.clear();
+    // Build implementation copy of armature tree
+    // node collection write done later when writing to file
+    std::queue<std::pair<RigNodeData*, AiNodeConstPtr>> nodeQueue;
 
-    //TODO FINISH BFS COPY
+    nodeQueue.emplace(PairHelper(baseNode));
+    rig.root = nodeQueue.front().first;
 
     while(!nodeQueue.empty())
     {
-	    
+      auto currPair = nodeQueue.front();
+      nodeQueue.pop();
+      auto currNode = currPair.first;
+      auto const& currAiNode = currPair.second;
+
+      for (auto i {0}; i < currAiNode->mNumChildren; ++i)
+      {
+        auto newPair = PairHelper(currAiNode->mChildren[i]);
+        currNode->children.push_back(newPair.first);
+        nodeQueue.push(newPair);
+      }
     }
+
+    std::cout << "Done\n";
   }
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
