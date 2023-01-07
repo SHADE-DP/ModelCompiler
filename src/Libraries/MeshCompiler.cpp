@@ -40,21 +40,21 @@ namespace SH_COMP
 
   void MeshCompiler::ProcessNode(AiNodeConstPtr node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept
   {
-    for (auto i{ 0 }; i < node->mNumChildren; ++i)
+    if (node->mNumMeshes > 0)
     {
-      auto child{ node->mChildren[i] };
-
-      if (child->mNumMeshes > 0)
-      {
-        aiMesh* mesh = scene.mMeshes[child->mMeshes[0]];
+        aiMesh* mesh = scene.mMeshes[node->mMeshes[0]];
         meshes.emplace_back();
         GetMesh(*mesh, meshes.back());
-        meshes.back().name = child->mName.C_Str();
-      }
-      else
-      {
-        BuildArmature(child, rig);
-      }
+        meshes.back().name = node->mName.C_Str();
+    }
+    else
+    {
+      BuildArmature(node, rig);
+    }
+
+    for (auto i{ 0 }; i < node->mNumChildren; ++i)
+    {
+      ProcessNode(node->mChildren[i], scene, meshes, rig);
     }
   }
 

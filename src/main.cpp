@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
 {	
 	std::vector<std::string> paths;
 
+	#if 0
+
 	if (argc == 1)
 	{
 		if (std::filesystem::is_directory(ASSET_ROOT))
@@ -47,13 +49,17 @@ int main(int argc, char* argv[])
 			paths.emplace_back(argv[i]);
 		}
 	}
+	#else
+
 
 	for (auto const& path : paths)
 	{
 		SH_COMP::MeshCompiler::LoadAndCompile(path);
 	}
+	#endif
 
-	//SH_COMP::MeshCompiler::LoadAndCompile("Raccoon.gltf");
+
+	SH_COMP::MeshCompiler::LoadAndCompile("MD_Homeowner-NoRig.gltf");
 
 	return 0;
 }
