@@ -135,10 +135,18 @@ namespace SH_COMP
     );
   }
 
+  void MeshWriter::WriteRig(FileReference file, RigData const& data)
+  {
+    WriteRigHeader(file, data.header);
+    RigWriteNode* root {nullptr};
+    WriteRigNodeData(file, data,root);
+    WriteRigTree(file, root);
+  }
+
   void MeshWriter::WriteRigHeader(FileReference file, RigDataHeader const& header)
   {
     file.write(
-      reinterpret_cast<char const*>(header.nodeCount),
+      reinterpret_cast<char const*>(&header.nodeCount),
       sizeof(uint32_t)
     );
 
@@ -148,46 +156,74 @@ namespace SH_COMP
     );
   }
 
-  void MeshWriter::WriteRigData(FileReference file, RigDataHeader const& header,
-	  RigData const& data)
+  void MeshWriter::WriteRigNodeData(FileReference file, RigData const& rig, RigWriteNode*& treeRoot)
   {
-    for (auto i {0}; i < header.nodeCount; ++i)
-    {
-	    file.write(
-        data.at(i).name.data(),
-        header.charCounts[i]
-      );
+    // Build node collection and assign ID to each node BFS STYLE
+    // Build tree of nodes using ID
 
+    std::vector<RigNodeDataWrite> dataToWrite;
+    dataToWrite.reserve(rig.header.nodeCount);
+
+    std::queue<std::pair<RigWriteNode*, RigNodeData*>> nodeQueue;
+    treeRoot = new RigWriteNode;
+    treeRoot->id = 0;
+    treeRoot->children.clear();
+    nodeQueue.emplace(std::make_pair(treeRoot, rig.root));
+    dataToWrite.emplace_back(rig.root->name, rig.root->transform);
+
+    while(!nodeQueue.empty())
+    {
+	    auto currPair = nodeQueue.front();
+      nodeQueue.pop();
+      auto currWriteNode = currPair.first;
+      auto currDataNode = currPair.second;
+
+      for (auto child : currDataNode->children)
+      {
+	      auto newPair = std::make_pair(new RigWriteNode(), child);
+        newPair.first->id = dataToWrite.size();
+        currWriteNode->children.push_back(newPair.first);
+        nodeQueue.push(newPair);
+
+        dataToWrite.emplace_back(child->name, child->transform);
+      }
+
+      delete currDataNode;
+    }
+
+    for (auto const& data : dataToWrite)
+    {
+	    file.write(data.name.c_str(), data.name.size());
       file.write(
-        reinterpret_cast<char const*>(&data.at(i).transform),
+				reinterpret_cast<char const*>(&data.transform),
         sizeof(SHMat4)
       );
     }
   }
 
-  void MeshWriter::WriteRigNodes(FileReference file, RigDataHeader const& header, RigNode const* root)
+  void MeshWriter::WriteRigTree(FileReference file, RigWriteNode const* root)
   {
-    std::queue<RigNode const*> nodeQueue;
+    std::queue<RigWriteNode const*> nodeQueue;
     nodeQueue.push(root);
 
     while(!nodeQueue.empty())
     {
-      auto const node = nodeQueue.front();
+      auto node = nodeQueue.front();
       nodeQueue.pop();
 
 	    file.write(
-        reinterpret_cast<char const*>(&node->idRef),
+				reinterpret_cast<char const*>(&node->id),
         sizeof(uint32_t)
       );
 
-      uint32_t const size { static_cast<uint32_t>(node->children.size()) };
+      uint32_t size = node->children.size();
       
 	    file.write(
-        reinterpret_cast<char const*>(&size),
+				reinterpret_cast<char const*>(&size),
         sizeof(uint32_t)
       );
 
-      for (auto const& child : node->children)
+      for (auto child : node->children)
       {
 	      nodeQueue.push(child);
       }
@@ -239,6 +275,7 @@ namespace SH_COMP
 
     WriteHeaders(file, asset);
     WriteData(file, asset);
+    WriteRig(file, asset.rig);
 
     file.close();
   }

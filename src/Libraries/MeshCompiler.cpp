@@ -289,6 +289,8 @@ namespace SH_COMP
 
     nodeQueue.emplace(PairHelper(baseNode));
     rig.root = nodeQueue.front().first;
+    rig.header.nodeCount++;
+    rig.header.charCounts.push_back(rig.root->name.length());
 
     while(!nodeQueue.empty())
     {
@@ -302,6 +304,9 @@ namespace SH_COMP
         auto newPair = PairHelper(currAiNode->mChildren[i]);
         currNode->children.push_back(newPair.first);
         nodeQueue.push(newPair);
+        
+		    rig.header.nodeCount++;
+		    rig.header.charCounts.push_back(newPair.first->name.length());
       }
     }
 

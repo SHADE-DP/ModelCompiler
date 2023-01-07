@@ -24,6 +24,18 @@ namespace SH_COMP
 		std::vector<RigNodeData*> children;
 	};
 
+	struct RigNodeDataWrite
+	{
+		std::string name;
+		SHMat4 transform;
+	};
+
+	struct RigWriteNode
+	{
+		uint32_t id;
+		std::vector<RigWriteNode*> children;
+	};
+
 	struct RigData
 	{
 		RigDataHeader header;
