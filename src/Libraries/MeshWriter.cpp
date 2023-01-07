@@ -231,15 +231,37 @@ namespace SH_COMP
       sizeof(asset.header)
     );
 
-    file.write(
-      reinterpret_cast<char const*>(asset.meshHeaders.data()),
-      sizeof(MeshDataHeader) * asset.header.meshCount
-    );
+    if (asset.header.meshCount > 0)
+    {
+	    file.write(
+	      reinterpret_cast<char const*>(asset.meshHeaders.data()),
+	      sizeof(MeshDataHeader) * asset.header.meshCount
+	    );
+    }
 
-    file.write(
-      reinterpret_cast<char const*>(asset.animHeaders.data()),
-      sizeof(AnimDataHeader) * asset.header.animCount
-    );
+    if (asset.header.animCount > 0)
+    {
+	    for(auto const& animHeader : asset.animHeaders)
+	    {
+		    file.write(
+		      reinterpret_cast<char const*>(&animHeader.charCount),
+		      sizeof(uint32_t)
+		    );
+	      
+		    file.write(
+		      reinterpret_cast<char const*>(&animHeader.animNodeCount),
+		      sizeof(uint32_t)
+		    );
+
+	      for (auto const& nodeHeader : animHeader.nodeHeaders)
+	      {
+			    file.write(
+			      reinterpret_cast<char const*>(&nodeHeader),
+			      sizeof(nodeHeader)
+			    );
+	      }
+	    }
+    }
   }
 
   void MeshWriter::WriteData(FileReference file, ModelConstRef asset)
