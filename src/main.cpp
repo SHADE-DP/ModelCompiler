@@ -49,17 +49,15 @@ int main(int argc, char* argv[])
 			paths.emplace_back(argv[i]);
 		}
 	}
-	#else
-
 
 	for (auto const& path : paths)
 	{
 		SH_COMP::MeshCompiler::LoadAndCompile(path);
 	}
-	#endif
-
-
+	
+	#else
 	SH_COMP::MeshCompiler::LoadAndCompile("MD_Homeowner-NoRig.gltf");
+	#endif
 
 	return 0;
 }
