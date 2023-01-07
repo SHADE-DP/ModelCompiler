@@ -15,91 +15,78 @@
 
 namespace SH_COMP
 {
-  void MeshWriter::WriteMeshHeader(std::ofstream& file, MeshDataHeader const& header)
+  void MeshWriter::WriteMeshData(FileReference file, std::vector<MeshDataHeader> const& headers,
+	  std::vector<MeshData> const& meshes)
   {
-    file.write(
-      reinterpret_cast<char const*>(&header),
-      sizeof(MeshDataHeader)
-    );
+    for (auto i {0}; i < headers.size(); ++i)
+    {
+      auto const& header = headers[i];
+      auto const& asset = meshes[i];
+
+	    auto const vertexVec3Byte{ sizeof(SHVec3) * header.vertexCount };
+	    auto const vertexVec2Byte{ sizeof(SHVec2) * header.vertexCount };
+
+	    file.write(
+	      asset.name.c_str(),
+	      header.charCount
+	    );
+
+	    file.write(
+	      reinterpret_cast<char const*>(asset.vertexPosition.data()),
+	      vertexVec3Byte
+	    );
+
+	    file.write(
+	      reinterpret_cast<char const*>(asset.vertexTangent.data()),
+	      vertexVec3Byte
+	    );
+
+	    file.write(
+	      reinterpret_cast<char const*>(asset.vertexNormal.data()),
+	      vertexVec3Byte
+	    );
+
+	    file.write(
+	      reinterpret_cast<char const*>(asset.texCoords.data()),
+	      vertexVec2Byte
+	    );
+
+	    file.write(
+	      reinterpret_cast<char const*>(asset.indices.data()),
+	      sizeof(uint32_t) * header.indexCount
+	    );
+    }
   }
 
-  void MeshWriter::WriteMeshData(std::ofstream& file, MeshDataHeader const& header, MeshData const& asset)
+  void MeshWriter::WriteAnimData(FileReference file, std::vector<AnimDataHeader> const& headers,
+	  std::vector<AnimData> const& anims)
   {
-    auto const vertexVec3Byte{ sizeof(SHVec3) * header.vertexCount };
-    auto const vertexVec2Byte{ sizeof(SHVec2) * header.vertexCount };
-
-    file.write(
-      asset.name.c_str(),
-      header.charCount
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexPosition.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexTangent.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.vertexNormal.data()),
-      vertexVec3Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.texCoords.data()),
-      vertexVec2Byte
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(asset.indices.data()),
-      sizeof(uint32_t) * header.indexCount
-    );
-  }
-
-  void MeshWriter::WriteAnimHeader(FileReference file, AnimDataHeader const& header)
-  {
-    auto constexpr intSize = sizeof(uint32_t);
-
-    file.write(
-      reinterpret_cast<char const*>(&header.charCount),
-      intSize
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&header.animNodeCount),
-      intSize
-    );
     
-    file.write(
-      reinterpret_cast<char const*>(header.nodeHeaders.data()),
-      sizeof(AnimNodeInfo) * header.nodeHeaders.size()
-    );
-  }
+    for (auto i {0}; i < headers.size(); ++i)
+    {
+      auto const& header = headers[i];
+      auto const& data = anims[i];
+    
+	    file.write(
+	      data.name.data(),
+	      header.charCount
+	    );
 
-  void MeshWriter::WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data)
-  {
-    file.write(
-      data.name.data(),
-      header.charCount
-    );
+	    file.write(
+	      reinterpret_cast<char const*>(&data.duration),
+	      sizeof(double)
+	    );
 
-    file.write(
-      reinterpret_cast<char const*>(&data.duration),
-      sizeof(double)
-    );
+	    file.write(
+	      reinterpret_cast<char const*>(&data.ticksPerSecond),
+	      sizeof(double)
+	    );
 
-    file.write(
-      reinterpret_cast<char const*>(&data.ticksPerSecond),
-      sizeof(double)
-    );
-
-		for (auto i{0}; i < header.animNodeCount; ++i)
-		{
-			WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
-		}
+			for (auto i{0}; i < header.animNodeCount; ++i)
+			{
+				WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
+			}
+    }
   }
 
   void MeshWriter::WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node)
@@ -119,19 +106,26 @@ namespace SH_COMP
       sizeof(AnimationBehaviour)
     );
 
+    uint32_t const keySize = node.positionKeys.size();
+
+    file.write(
+      reinterpret_cast<char const*>(&keySize),
+      sizeof(uint32_t)
+    );
+
     file.write(
       reinterpret_cast<char const*>(node.positionKeys.data()),
-      sizeof(PositionKey) * node.positionKeys.size()
+      sizeof(PositionKey) * keySize
     );
 
     file.write(
       reinterpret_cast<char const*>(node.rotationKeys.data()),
-      sizeof(RotationKey) * node.rotationKeys.size()
+      sizeof(RotationKey) * keySize
     );
 
     file.write(
       reinterpret_cast<char const*>(node.scaleKeys.data()),
-      sizeof(ScaleKey) * node.scaleKeys.size()
+      sizeof(ScaleKey) * keySize
     );
   }
 
@@ -232,27 +226,30 @@ namespace SH_COMP
 
   void MeshWriter::WriteHeaders(FileReference file, ModelConstRef asset)
   {
-    for (auto const& header : asset.meshHeaders)
-    {
-	    WriteMeshHeader(file, header);
-    }
+    file.write(
+      reinterpret_cast<char const*>(&asset.header),
+      sizeof(asset.header)
+    );
 
-    for (auto  const& header : asset.animHeaders)
-    {
-	    WriteAnimHeader(file, header);
-    }
+    file.write(
+      reinterpret_cast<char const*>(asset.meshHeaders.data()),
+      sizeof(MeshDataHeader) * asset.header.meshCount
+    );
+
+    file.write(
+      reinterpret_cast<char const*>(asset.animHeaders.data()),
+      sizeof(AnimDataHeader) * asset.header.animCount
+    );
   }
 
   void MeshWriter::WriteData(FileReference file, ModelConstRef asset)
   {
-    for (auto i {0}; i < asset.meshes.size(); ++i)
+    WriteMeshData(file, asset.meshHeaders, asset.meshes);
+    WriteAnimData(file, asset.animHeaders, asset.anims);
+
+    if (asset.rig.root)
     {
-	    WriteMeshData(file, asset.meshHeaders[i], asset.meshes[i]);
-    }
-    
-    for (auto i {0}; i < asset.anims.size(); ++i)
-    {
-	    WriteAnimData(file, asset.animHeaders[i], asset.anims[i]);
+			WriteRig(file, asset.rig);
     }
   }
 
@@ -268,14 +265,8 @@ namespace SH_COMP
       return;
     }
 
-    file.write(
-      reinterpret_cast<char const*>(&asset.header),
-      sizeof(asset.header)
-    );
-
     WriteHeaders(file, asset);
     WriteData(file, asset);
-    WriteRig(file, asset.rig);
 
     file.close();
   }

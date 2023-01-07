@@ -309,8 +309,6 @@ namespace SH_COMP
 		    rig.header.charCounts.push_back(newPair.first->name.length());
       }
     }
-
-    std::cout << "Done\n";
   }
 
   void MeshCompiler::LoadAndCompile(AssetPath path) noexcept

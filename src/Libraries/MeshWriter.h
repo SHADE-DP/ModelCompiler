@@ -20,11 +20,8 @@ namespace SH_COMP
     using FileReference = std::ofstream&;
     using ModelConstRef = ModelAsset const&;
 
-		static void WriteMeshHeader(FileReference file, MeshDataHeader const& header);
-    static void WriteMeshData(FileReference file, MeshDataHeader const& header, MeshData const& asset);
-
-		static void WriteAnimHeader(FileReference file, AnimDataHeader const& header);
-    static void WriteAnimData(FileReference file, AnimDataHeader const& header, AnimData const& data);
+    static void WriteMeshData(FileReference file, std::vector<MeshDataHeader> const& headers, std::vector<MeshData> const& meshes);
+    static void WriteAnimData(FileReference file, std::vector<AnimDataHeader> const& headers, std::vector<AnimData> const& anims);
     static void WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node);
 
     static void WriteRig(FileReference file, RigData const& data);
