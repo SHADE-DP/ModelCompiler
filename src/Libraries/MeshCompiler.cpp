@@ -47,14 +47,16 @@ namespace SH_COMP
         GetMesh(*mesh, meshes.back());
         meshes.back().name = node->mName.C_Str();
     }
-    else
+    else if (node->mParent != nullptr)
     {
       BuildArmature(node, rig);
     }
-
-    for (auto i{ 0 }; i < node->mNumChildren; ++i)
+    else
     {
-      ProcessNode(node->mChildren[i], scene, meshes, rig);
+	    for (auto i{ 0 }; i < node->mNumChildren; ++i)
+	    {
+	      ProcessNode(node->mChildren[i], scene, meshes, rig);
+	    }
     }
   }
 
