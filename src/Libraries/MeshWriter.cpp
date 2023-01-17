@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <stack>
+#include <queue>
 
 namespace SH_COMP
 {
@@ -189,7 +190,6 @@ namespace SH_COMP
     treeRoot->id = 0;
     treeRoot->children.clear();
     nodeStack.emplace(std::make_pair(treeRoot, rig.root));
-    dataToWrite.emplace_back(rig.root->name, rig.root->transform);
 
     while(!nodeStack.empty())
     {
@@ -198,15 +198,17 @@ namespace SH_COMP
       auto currWriteNode = currPair.first;
       auto currDataNode = currPair.second;
 
-      for (int i {static_cast<int>(currDataNode->children.size() - 1)}; i >= 0; --i)
+      dataToWrite.emplace_back(currDataNode->name, currDataNode->transform);
+      uint32_t idCounter = dataToWrite.size() + currDataNode->children.size() - 1;
+
+      for (auto i{0}; i < currDataNode->children.size(); ++i)
       {
         auto child = currDataNode->children[i];
 	      auto newPair = std::make_pair(new RigWriteNode(), child);
-        newPair.first->id = dataToWrite.size();
+        
+        newPair.first->id = idCounter - i;
         currWriteNode->children.push_back(newPair.first);
         nodeStack.push(newPair);
-
-        dataToWrite.emplace_back(child->name, child->transform);
       }
 
       delete currDataNode;
@@ -224,29 +226,33 @@ namespace SH_COMP
 
   void MeshWriter::WriteRigTree(FileReference file, RigWriteNode const* root)
   {
-    std::stack<RigWriteNode const*> nodeStack;
-    nodeStack.push(root);
+    std::queue<RigWriteNode const*> nodeQueue;
+    nodeQueue.push(root);
 
-    while(!nodeStack.empty())
+    int ctr = 0;
+
+    while(!nodeQueue.empty())
     {
-      auto node = nodeStack.top();
-      nodeStack.pop();
+      auto node = nodeQueue.front();
+      nodeQueue.pop();
 
 	    file.write(
 				reinterpret_cast<char const*>(&node->id),
         sizeof(uint32_t)
       );
 
-      uint32_t size = node->children.size();
+      uint32_t size = static_cast<uint32_t>(node->children.size());
       
 	    file.write(
 				reinterpret_cast<char const*>(&size),
         sizeof(uint32_t)
       );
 
+      std::cout << "Write Node: " << node->id << ", " << node->children.size() << std::endl;;
+
       for (auto child : node->children)
       {
-	      nodeStack.push(child);
+        nodeQueue.push(child);
       }
     }
   }

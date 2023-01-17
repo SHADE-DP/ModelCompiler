@@ -290,8 +290,6 @@ namespace SH_COMP
 
     nodeStack.emplace(PairHelper(baseNode));
     rig.root = nodeStack.top().first;
-    rig.header.nodeCount++;
-    rig.header.charCounts.push_back(rig.root->name.length());
 
     while(!nodeStack.empty())
     {
@@ -300,14 +298,15 @@ namespace SH_COMP
       auto currNode = currPair.first;
       auto const& currAiNode = currPair.second;
       int const iStart {static_cast<int>(currAiNode->mNumChildren - 1)};
+
+      rig.header.nodeCount++;
+      rig.header.charCounts.push_back(currNode->name.length());
+
       for (int i {iStart}; i >= 0 ; --i)
       {
         auto newPair = PairHelper(currAiNode->mChildren[i]);
         currNode->children.push_back(newPair.first);
         nodeStack.push(newPair);
-        
-		    rig.header.nodeCount++;
-		    rig.header.charCounts.push_back(newPair.first->name.length());
       }
     }
   }
