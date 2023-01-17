@@ -257,17 +257,17 @@ namespace SH_COMP
 
   void MeshCompiler::LoadFromFile(AssetPath path, ModelAsset& asset) noexcept
   {
-    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(), 0
-      //aiProcess_Triangulate           // Make sure we get triangles rather than nvert polygons
-      //| aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
-      //| aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
-      //| aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
-      //| aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
-      //| aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
-      //| aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
-      //| aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
-      //| aiProcess_ValidateDataStructure     // checks all bones, animations and vertices are linked correctly
-      //| aiProcess_LimitBoneWeights          // Limit number of bones effect vertices to 4
+    const aiScene* scene = aiImporter.ReadFile(path.string().c_str(), 
+      aiProcess_Triangulate           // Make sure we get triangles rather than nvert polygons
+      | aiProcess_GenUVCoords               // Convert any type of mapping to uv mapping
+      | aiProcess_TransformUVCoords         // preprocess UV transformations (scaling, translation ...)
+      | aiProcess_FindInstances             // search for instanced meshes and remove them by references to one master
+      | aiProcess_CalcTangentSpace          // calculate tangents and bitangents if possible
+      | aiProcess_JoinIdenticalVertices     // join identical vertices/ optimize indexing
+      | aiProcess_FindInvalidData           // detect invalid model data, such as invalid normal vectors
+      | aiProcess_FlipUVs                   // flip the V to match the Vulkans way of doing UVs
+      | aiProcess_ValidateDataStructure     // checks all bones, animations and vertices are linked correctly
+      | aiProcess_LimitBoneWeights          // Limit number of bones effect vertices to 4
     );
 
     if (!scene || !scene->HasMeshes())
