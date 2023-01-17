@@ -11,7 +11,7 @@
 #include "MeshWriter.h"
 #include <fstream>
 #include <iostream>
-#include <queue>
+#include <stack>
 
 namespace SH_COMP
 {
@@ -184,26 +184,27 @@ namespace SH_COMP
     std::vector<RigNodeDataWrite> dataToWrite;
     dataToWrite.reserve(rig.header.nodeCount);
 
-    std::queue<std::pair<RigWriteNode*, RigNodeData*>> nodeQueue;
+    std::stack<std::pair<RigWriteNode*, RigNodeData*>> nodeStack;
     treeRoot = new RigWriteNode;
     treeRoot->id = 0;
     treeRoot->children.clear();
-    nodeQueue.emplace(std::make_pair(treeRoot, rig.root));
+    nodeStack.emplace(std::make_pair(treeRoot, rig.root));
     dataToWrite.emplace_back(rig.root->name, rig.root->transform);
 
-    while(!nodeQueue.empty())
+    while(!nodeStack.empty())
     {
-	    auto currPair = nodeQueue.front();
-      nodeQueue.pop();
+	    auto currPair = nodeStack.top();
+      nodeStack.pop();
       auto currWriteNode = currPair.first;
       auto currDataNode = currPair.second;
 
-      for (auto child : currDataNode->children)
+      for (int i {static_cast<int>(currDataNode->children.size() - 1)}; i >= 0; --i)
       {
+        auto child = currDataNode->children[i];
 	      auto newPair = std::make_pair(new RigWriteNode(), child);
         newPair.first->id = dataToWrite.size();
         currWriteNode->children.push_back(newPair.first);
-        nodeQueue.push(newPair);
+        nodeStack.push(newPair);
 
         dataToWrite.emplace_back(child->name, child->transform);
       }
@@ -223,13 +224,13 @@ namespace SH_COMP
 
   void MeshWriter::WriteRigTree(FileReference file, RigWriteNode const* root)
   {
-    std::queue<RigWriteNode const*> nodeQueue;
-    nodeQueue.push(root);
+    std::stack<RigWriteNode const*> nodeStack;
+    nodeStack.push(root);
 
-    while(!nodeQueue.empty())
+    while(!nodeStack.empty())
     {
-      auto node = nodeQueue.front();
-      nodeQueue.pop();
+      auto node = nodeStack.top();
+      nodeStack.pop();
 
 	    file.write(
 				reinterpret_cast<char const*>(&node->id),
@@ -245,7 +246,7 @@ namespace SH_COMP
 
       for (auto child : node->children)
       {
-	      nodeQueue.push(child);
+	      nodeStack.push(child);
       }
     }
   }
