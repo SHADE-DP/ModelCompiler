@@ -42,21 +42,20 @@ namespace SH_COMP
   {
     if (node->mNumMeshes > 0)
     {
-        aiMesh* mesh = scene.mMeshes[node->mMeshes[0]];
-        meshes.emplace_back();
-        GetMesh(*mesh, meshes.back());
-        meshes.back().name = node->mName.C_Str();
+      aiMesh* mesh = scene.mMeshes[node->mMeshes[0]];
+      meshes.emplace_back();
+      GetMesh(*mesh, meshes.back());
+      meshes.back().name = node->mName.C_Str();
     }
     else if (node->mParent != nullptr)
     {
       BuildArmature(node, rig);
+      return;
     }
-    else
+
+    for (auto i{ 0 }; i < node->mNumChildren; ++i)
     {
-	    for (auto i{ 0 }; i < node->mNumChildren; ++i)
-	    {
-	      ProcessNode(node->mChildren[i], scene, meshes, rig);
-	    }
+      ProcessNode(node->mChildren[i], scene, meshes, rig);
     }
   }
 

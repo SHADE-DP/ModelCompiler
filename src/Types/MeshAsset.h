@@ -18,7 +18,7 @@ namespace SH_COMP
 	struct MeshBoneInfo
 	{
 		uint32_t charCount;
-		uint32_t weightCount; // Size should be same as boneCount
+		uint32_t weightCount;
 	};
 
 	struct BoneWeight

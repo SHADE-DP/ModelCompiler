@@ -55,6 +55,32 @@ namespace SH_COMP
 	      reinterpret_cast<char const*>(asset.indices.data()),
 	      sizeof(uint32_t) * header.indexCount
 	    );
+
+      if (header.boneCount)
+      {
+	      file.write(
+	        reinterpret_cast<char const*>(asset.bonesInfo.data()),
+	        sizeof(MeshBoneInfo) * header.boneCount
+	      );
+
+	      for (auto const& bone : asset.bones)
+	      {
+		      file.write(
+	          bone.name.data(),
+	          bone.name.size()
+	        );
+
+	        file.write(
+	          reinterpret_cast<char const*>(&bone.offset),
+	          sizeof(SHMat4)
+	        );
+
+	        file.write(
+	        reinterpret_cast<char const*>(bone.weights.data()),
+	        sizeof(BoneWeight) * bone.weights.size()
+	        );
+	      }
+      }
     }
   }
 
