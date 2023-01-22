@@ -39,6 +39,8 @@ namespace SH_COMP
     static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
     static void BuildHeaders(ModelRef asset) noexcept;
 
+    static void BoneOffsetCopy(ModelRef asset) noexcept;
+
     static void BuildArmature(AiNodeConstPtr node, RigData& rig) noexcept;
     static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
 

@@ -21,5 +21,18 @@ namespace SH_COMP
 	struct SHMat4
 	{
 		float data[16];
+
+		bool operator==(SHMat4 const& rhs) const
+		{
+			for (auto i {0}; i < 16; ++i)
+			{
+				if (data[i] != rhs.data[i])
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
 	};
 }

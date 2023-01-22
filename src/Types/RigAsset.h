@@ -21,6 +21,7 @@ namespace SH_COMP
 
 		std::string name;
 		SHMat4 transform;
+		SHMat4 offset;
 		std::vector<RigNodeData*> children;
 	};
 
@@ -28,6 +29,7 @@ namespace SH_COMP
 	{
 		std::string name;
 		SHMat4 transform;
+		SHMat4 offset;
 	};
 
 	struct RigWriteNode

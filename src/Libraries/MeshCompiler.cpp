@@ -179,6 +179,34 @@ namespace SH_COMP
     }
   }
 
+  void MeshCompiler::BoneOffsetCopy(ModelRef asset) noexcept
+  {
+    auto const& boneVec {asset.meshes[0].bones};
+
+    std::stack<RigNodeData*> nodeStack;
+    nodeStack.push(asset.rig.root);
+
+    while(!nodeStack.empty())
+    {
+	    auto& node = *nodeStack.top();
+      nodeStack.pop();
+
+      for (auto const& bone : boneVec)
+      {
+	      if (node.name == bone.name)
+	      {
+		      node.offset = bone.offset;
+          break;
+	      }
+      }
+
+      for (auto const& child : node.children)
+      {
+	      nodeStack.push(child);
+      }
+    }
+  }
+
   void MeshCompiler::ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept
   {
     // Size and read for number of animation clips
@@ -317,6 +345,7 @@ namespace SH_COMP
 
     LoadFromFile(path, *asset);
     BuildHeaders(*asset);
+    BoneOffsetCopy(*asset);
     MeshWriter::CompileMeshBinary(path, *asset);
 
     delete asset;

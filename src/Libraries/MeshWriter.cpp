@@ -198,7 +198,7 @@ namespace SH_COMP
       auto currWriteNode = currPair.first;
       auto currDataNode = currPair.second;
 
-      dataToWrite.emplace_back(currDataNode->name, currDataNode->transform);
+      dataToWrite.emplace_back(currDataNode->name, currDataNode->transform, currDataNode->offset);
       uint32_t idCounter = dataToWrite.size() + currDataNode->children.size() - 1;
 
       for (auto i{0}; i < currDataNode->children.size(); ++i)
@@ -219,6 +219,10 @@ namespace SH_COMP
 	    file.write(data.name.c_str(), data.name.size());
       file.write(
 				reinterpret_cast<char const*>(&data.transform),
+        sizeof(SHMat4)
+      );
+      file.write(
+				reinterpret_cast<char const*>(&data.offset),
         sizeof(SHMat4)
       );
     }
@@ -247,8 +251,6 @@ namespace SH_COMP
 				reinterpret_cast<char const*>(&size),
         sizeof(uint32_t)
       );
-
-      std::cout << "Write Node: " << node->id << ", " << node->children.size() << std::endl;;
 
       for (auto child : node->children)
       {
