@@ -53,6 +53,7 @@ int main(int argc, char* argv[])
 	for (auto const& path : paths)
 	{
 		SH_COMP::MeshCompiler::LoadAndCompile(path);
+		std::cout << "[Mesh Compiler] Compiled file: " << path << std::endl;
 	}
 	
 	#else
