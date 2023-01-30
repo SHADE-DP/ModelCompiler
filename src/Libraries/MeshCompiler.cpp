@@ -181,6 +181,11 @@ namespace SH_COMP
 
   void MeshCompiler::BoneOffsetCopy(ModelRef asset) noexcept
   {
+    if (asset.meshHeaders[0].boneCount == 0)
+    {
+	    return;
+    }
+
     auto const& boneVec {asset.meshes[0].bones};
 
     std::stack<RigNodeData*> nodeStack;
