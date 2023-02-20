@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {	
 	std::vector<std::string> paths;
 
-	#if 1
+	#if 0
 
 	if (argc == 1)
 	{
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	}
 	
 	#else
-	SH_COMP::MeshCompiler::LoadAndCompile("MD_Homeowner-NoRig.gltf");
+	SH_COMP::MeshCompiler::LoadAndCompile("racoon.gltf");
 	#endif
 
 	return 0;

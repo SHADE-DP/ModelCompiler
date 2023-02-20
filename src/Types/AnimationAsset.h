@@ -12,7 +12,7 @@
 
 #include "PseudoMath.h"
 #include <vector>
-#include <assimp/anim.h>
+#include <string>
 
 namespace SH_COMP
 {

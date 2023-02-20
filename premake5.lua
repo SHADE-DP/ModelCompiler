@@ -1,14 +1,15 @@
-AssimpInclude = "%{prj.location}\\Dependencies\\assimp" 
+-- AssimpInclude = "%{prj.location}\\Dependencies\\assimp" 
+TinyGLTFInclude = "%{prj.location}\\Dependencies\\tinygltf" 
 
--- outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
--- interdir = "%{wks.location}/bin_int"
--- workspace "ModelCompile"
--- architecture "x64"
---   configurations
---   {
---     "Release",
---     "Debug"
---   }
+outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
+interdir = "%{wks.location}/bin_int"
+workspace "ModelCompile"
+architecture "x64"
+  configurations
+  {
+    "Release",
+    "Debug"
+  }
 
 project "ModelCompiler"
   kind "ConsoleApp"
@@ -26,7 +27,7 @@ project "ModelCompiler"
 
   externalincludedirs
   {
-	  "%{AssimpInclude}\\include"
+	  "%{TinyGLTFInclude}"
   }
   
   includedirs
@@ -47,37 +48,37 @@ project "ModelCompiler"
   	"MultiProcessorCompile"
   }
 
-  filter "configurations:Debug"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Debug\\assimp-vc142-mtd.dll\" \"$(OutDir)\""
-    }
+  -- filter "configurations:Debug"
+  --   postbuildcommands 
+  --   {
+  --     "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Debug\\assimp-vc142-mtd.dll\" \"$(OutDir)\""
+  --   }
     
-  filter "configurations:Release"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
-    }
+  -- filter "configurations:Release"
+  --   postbuildcommands 
+  --   {
+  --     "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
+  --   }
 
-  filter "configurations:Publish"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
-    }
+  -- filter "configurations:Publish"
+  --   postbuildcommands 
+  --   {
+  --     "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
+  --   }
 
   warnings 'Extra'
   
   filter "configurations:Debug"
     symbols "On"
     defines {"_DEBUG"}
-    links{"assimp-vc142-mtd.lib"}
+    -- links{"assimp-vc142-mtd.lib"}
   
   filter "configurations:Release"
     optimize "On"
     defines{"_RELEASE"}
-    links{"assimp-vc142-mt.lib"}
+    -- links{"assimp-vc142-mt.lib"}
   
   filter "configurations:Publish"
     optimize "On"
     defines{"_RELEASE, _PUBLISH"}
-    links{"assimp-vc142-mt.lib"}
+    -- links{"assimp-vc142-mt.lib"}

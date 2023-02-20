@@ -12,16 +12,30 @@
  *****************************************************************************/
 #pragma once
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
+#define TINYGLTF_IMPLEMENTATION
+#define TINYGLTF_NO_EXTERNAL_IMAGE
+#define TINYGLTF_USE_CPP14
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_USE_CPP14
+
 #include <vector>
 
 #include "Types/AnimationAsset.h"
 #include "Types/ModelAsset.h"
 #include "AssetMacros.h"
 
+//Forward Declare
+namespace tinygltf
+{
+	class Model;
+}
+
 namespace SH_COMP
 {
+  class tinygltf::Model;
   class MeshCompiler
   {
 
@@ -29,25 +43,14 @@ namespace SH_COMP
     using AnimVectorRef = std::vector<AnimData>&;
 
     using ModelRef = ModelAsset&;
-
-    using AiNodeConstPtr = aiNode const*;
-
-    static Assimp::Importer aiImporter;
+    using ModelData = tinygltf::Model;
+    
     static uint32_t rigNodeIDCounter;
 
-    static void ProcessNode(AiNodeConstPtr node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept;
-    static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
-    static void BuildHeaders(ModelRef asset) noexcept;
-
-    static void BoneOffsetCopy(ModelRef asset) noexcept;
-
-    static void BuildArmature(AiNodeConstPtr node, RigData& rig) noexcept;
-    static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
-
-    static std::pair<RigNodeData*, AiNodeConstPtr> PairHelper(AiNodeConstPtr node);
-    static RigNodeData* NewNode(AiNodeConstPtr inNode);
-
   	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
+
+
+    static void ProcessModel(ModelData const&, ModelRef asset) noexcept;
 
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
