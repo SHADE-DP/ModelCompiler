@@ -12,6 +12,15 @@
  *****************************************************************************/
 
 
+#define TINYGLTF_IMPLEMENTATION
+#define TINYGLTF_NO_EXTERNAL_IMAGE
+#define TINYGLTF_USE_CPP14
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE
+#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define TINYGLTF_NO_STB_IMAGE
+#define TINYGLTF_USE_CPP14
+
 #include "MeshCompiler.h"
 #include "MeshWriter.h"
 
@@ -24,8 +33,9 @@
 
 namespace SH_COMP
 {
-
-  uint32_t MeshCompiler::rigNodeIDCounter { 0 };
+  AccessorReference MeshCompiler::accessors{ nullptr };
+  BufferViewReference MeshCompiler::bufferViews{ nullptr };
+  BufferData MeshCompiler::buffer{ nullptr };
 
   void MeshCompiler::LoadFromFile(AssetPath path, ModelRef asset) noexcept
   {
@@ -52,9 +62,9 @@ namespace SH_COMP
 
   void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
   {
-    auto const& accessors { data.accessors };
-    auto const& bufferViews { data.bufferViews };
-    auto const& bufferData { data.buffers[0].data.data() };
+    accessors = &data.accessors;
+    bufferViews = &data.bufferViews;
+    buffer = data.buffers[0].data.data();
 
     for (auto const& mesh : data.meshes)
     {
@@ -64,25 +74,77 @@ namespace SH_COMP
 
       try
       {
-				// Get Accessors
-	      auto const& positionAccessor { accessors[primitive.attributes.at(ATT_POSITION.data())]};
-	      auto const& normalAccessor { accessors[primitive.attributes.at(ATT_NORMAL.data())]};
-	      auto const& tangentAccessor { accessors[primitive.attributes.at(ATT_TANGENT.data())]};
+        //meshIn.vertexPosition = FetchData<SHVec3>(primitive.attributes.at(ATT_POSITION.data()));
+        //meshIn.vertexNormal = FetchData<SHVec3>(primitive.attributes.at(ATT_NORMAL.data()));
+        //meshIn.vertexTangent = FetchData<SHVec3>(primitive.attributes.at(ATT_TANGENT.data()));
+        //meshIn.texCoords = FetchData<SHVec2>(primitive.attributes.at(ATT_TEXCOORD.data()));
 
-        meshIn.vertexPosition.resize(positionAccessor.count);
-        auto const& positionView { bufferViews[positionAccessor.bufferView] };
+        auto accessor = &(*accessors)[primitive.attributes.at(ATT_POSITION.data())];
+        auto view = &(*bufferViews)[accessor->bufferView];
+        meshIn.vertexPosition.resize(accessor->count);
         std::memcpy(
-          meshIn.vertexPosition.data(), 
-          bufferData + positionView.byteOffset,
-          positionView.byteLength
+          meshIn.vertexPosition.data(),
+          buffer + view->byteOffset,
+          view->byteLength
         );
 
-        meshIn.vertexNormal.resize(normalAccessor.count);
+        accessor = &(*accessors)[primitive.indices];
+        view = &(*bufferViews)[accessor->bufferView];
+        meshIn.indices.resize(accessor->count);
+        std::memcpy(
+          meshIn.indices.data(),
+          buffer + view->byteOffset,
+          view->byteLength
+        );
+
+        accessor = &(*accessors)[primitive.attributes.at(ATT_NORMAL.data())];
+        view = &(*bufferViews)[accessor->bufferView];
+        meshIn.vertexNormal.resize(accessor->count);
+        std::memcpy(
+          meshIn.vertexNormal.data(),
+          buffer + view->byteOffset,
+          view->byteLength
+        );
+
+        accessor = &(*accessors)[primitive.attributes.at(ATT_TEXCOORD.data())];
+        view = &(*bufferViews)[accessor->bufferView];
+        meshIn.texCoords.resize(accessor->count);
+        std::memcpy(
+          meshIn.texCoords.data(),
+          buffer + view->byteOffset,
+          view->byteLength
+        );
+
+        accessor = &(*accessors)[primitive.attributes.at(ATT_TANGENT.data())];
+        view = &(*bufferViews)[accessor->bufferView];
+        meshIn.vertexTangent.resize(accessor->count);
+        std::memcpy(
+          meshIn.vertexTangent.data(),
+          buffer + view->byteOffset,
+          view->byteLength
+        );
       }
       catch (std::out_of_range e)
       {
-	      std::cout << "[Model Compiler] Failed to load gltf\n";
+	      std::cout << "[Model Compiler] Failed to load critical data from gltf\n";
       }
+    }
+  }
+
+  inline void MeshCompiler::BuildHeaders(ModelRef asset) noexcept
+  {
+    // Mesh Headers
+    asset.meshHeaders.resize(asset.meshes.size());
+    asset.header.meshCount = asset.meshes.size();
+    for (auto i{ 0 }; i < asset.header.meshCount; ++i)
+    {
+      auto const& mesh = asset.meshes[i];
+      auto& head = asset.meshHeaders[i];
+
+      head.charCount = mesh.name.size();
+      head.indexCount = mesh.indices.size();
+      head.vertexCount = mesh.vertexPosition.size();
+      head.boneCount = mesh.bonesInfo.size();
     }
   }
 
@@ -91,6 +153,7 @@ namespace SH_COMP
     auto const asset = new ModelAsset();
 
     LoadFromFile(path, *asset);
+    BuildHeaders(*asset);
     MeshWriter::CompileMeshBinary(path, *asset);
 
     delete asset;

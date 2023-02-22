@@ -71,13 +71,16 @@ constexpr std::string_view FBX_EXTENSION{ ".fbx" };
 constexpr std::string_view GLTF_EXTENSION{ ".gltf" };
 
 // ATTRIBUTE NAMES
+// BASIC NEEDED
 constexpr std::string_view ATT_POSITION {"POSITION"};
 constexpr std::string_view ATT_NORMAL { "NORMAL" };
 constexpr std::string_view ATT_TANGENT { "TANGENT" };
-constexpr std::string_view ATT_JOINT { "JOINTS_0" };
-constexpr std::string_view ATT_COLOUR { "COLOR_0" };
 constexpr std::string_view ATT_TEXCOORD { "TEXCOORD_0" };
+
+// VARIABLE ATTRIBUTES
 constexpr std::string_view ATT_WEIGHTS { "WEIGHTS_0" };
+constexpr std::string_view ATT_JOINT{ "JOINTS_0" };
+constexpr std::string_view ATT_COLOUR{ "COLOR_0" };
 
 constexpr std::string_view EXTERNALS[] = {
 	FBX_EXTENSION,

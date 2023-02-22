@@ -12,15 +12,6 @@
  *****************************************************************************/
 #pragma once
 
-#define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_NO_EXTERNAL_IMAGE
-#define TINYGLTF_USE_CPP14
-#define TINYGLTF_NO_INCLUDE_STB_IMAGE
-#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_USE_CPP14
-
 #include <vector>
 
 #include "Types/AnimationAsset.h"
@@ -30,27 +21,32 @@
 //Forward Declare
 namespace tinygltf
 {
+	struct Accessor;
+  struct BufferView;
 	class Model;
 }
 
 namespace SH_COMP
 {
-  class tinygltf::Model;
+  using MeshVectorRef = std::vector<MeshData>&;
+  using AnimVectorRef = std::vector<AnimData>&;
+
+  using ModelRef = ModelAsset&;
+  using ModelData = tinygltf::Model;
+  using AccessorReference = std::vector<tinygltf::Accessor> const*;
+  using BufferViewReference = std::vector<tinygltf::BufferView> const*;
+  using BufferData = unsigned char const*;
+
   class MeshCompiler
   {
 
-    using MeshVectorRef = std::vector<MeshData>&;
-    using AnimVectorRef = std::vector<AnimData>&;
-
-    using ModelRef = ModelAsset&;
-    using ModelData = tinygltf::Model;
-    
-    static uint32_t rigNodeIDCounter;
+    static AccessorReference accessors;
+    static BufferViewReference bufferViews;
+    static BufferData buffer;
 
   	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
-
-
-    static void ProcessModel(ModelData const&, ModelRef asset) noexcept;
+    static inline void ProcessModel(ModelData const&, ModelRef asset) noexcept;
+    static inline void BuildHeaders(ModelRef asset) noexcept;
 
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
