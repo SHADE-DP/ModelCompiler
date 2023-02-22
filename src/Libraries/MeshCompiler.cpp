@@ -14,12 +14,10 @@
 
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_EXTERNAL_IMAGE
-#define TINYGLTF_USE_CPP14
 #define TINYGLTF_NO_INCLUDE_STB_IMAGE
 #define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 #define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_USE_CPP14
 
 #include "MeshCompiler.h"
 #include "MeshWriter.h"
@@ -52,7 +50,7 @@ namespace SH_COMP
       std::cout << "[TinyGLTF Error]: " << error << std::endl;
 
     if (!result)
-    {
+    { 
 	    std::cout << "TinyGLTF failed to parse.\n";
       std::exit(1);
     }
@@ -62,6 +60,16 @@ namespace SH_COMP
 
   void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
   {
+#if 0
+    for (auto i {0}; i < 2; ++i)
+    {
+      auto& mesh{ asset.meshes.emplace_back() };
+      mesh.vertexNormal.resize(3883);
+      mesh.vertexPosition.resize(3883);
+      mesh.vertexTangent.resize(3883);
+      mesh.texCoords.resize(3883);
+    }
+#else
     accessors = &data.accessors;
     bufferViews = &data.bufferViews;
     buffer = data.buffers[0].data.data();
@@ -129,6 +137,8 @@ namespace SH_COMP
 	      std::cout << "[Model Compiler] Failed to load critical data from gltf\n";
       }
     }
+#endif
+
   }
 
   inline void MeshCompiler::BuildHeaders(ModelRef asset) noexcept
