@@ -118,11 +118,12 @@ namespace SH_COMP
   {
     auto const& accessor = (*accessors)[accessorID];
     auto const& view = (*bufferViews)[accessor.bufferView];
-    auto const typeIdentifier{ static_cast<ACCESSOR_DATA_TYPE>(accessor.componentType) };
+    auto const typeIdentifier{ static_cast<ACCESSOR_COMPONENT_TYPE>(accessor.componentType) };
     auto const sizeIdentifier{ SizeOfType(typeIdentifier) };
-    if (sizeof(T) == sizeIdentifier)
+    auto const componentCount{ CountOfType(accessor.type) };
+    dst.resize(accessor.count);
+    if (sizeof(T) == sizeIdentifier * componentCount)
     {
-      dst.resize(accessor.count);
       std::memcpy(
         dst.data(),
         buffer + view.byteOffset,
@@ -138,9 +139,19 @@ namespace SH_COMP
       view.byteLength
     );
 
-    for (auto i{0}; i < accessor.count; i += sizeIdentifier)
+    auto srcPtr{ tempData.data() };
+    auto dstPtr{ dst.data() };
+    size_t index{ 0 };
+    for (auto i{0}; i < accessor.count; ++i, ++index)
     {
-	    
+      std::memcpy(
+        dstPtr,
+        srcPtr,
+        sizeIdentifier
+      );
+
+      srcPtr += sizeIdentifier;
+      dstPtr += sizeof(T);
     }
   }
 

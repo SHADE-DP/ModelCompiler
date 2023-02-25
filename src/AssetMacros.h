@@ -20,7 +20,7 @@ enum class BUFFER_TARGET : int
 	ELEMENT_ARRAY_BUFFER = 34963
 };
 
-enum class ACCESSOR_DATA_TYPE : int
+enum class ACCESSOR_COMPONENT_TYPE : int
 {
 	BYTE = 5120,
 	U_BYTE = 5121,
@@ -30,25 +30,25 @@ enum class ACCESSOR_DATA_TYPE : int
 	FLOAT = 5126
 };
 
-constexpr size_t SizeOfType(ACCESSOR_DATA_TYPE type)
+constexpr size_t SizeOfType(ACCESSOR_COMPONENT_TYPE type)
 {
 	switch(type)
 	{
-	case ACCESSOR_DATA_TYPE::BYTE:
-	case ACCESSOR_DATA_TYPE::U_BYTE:
+	case ACCESSOR_COMPONENT_TYPE::BYTE:
+	case ACCESSOR_COMPONENT_TYPE::U_BYTE:
 		return sizeof(char);
-	case ACCESSOR_DATA_TYPE::SHORT:
-	case ACCESSOR_DATA_TYPE::U_SHORT:
+	case ACCESSOR_COMPONENT_TYPE::SHORT:
+	case ACCESSOR_COMPONENT_TYPE::U_SHORT:
 		return sizeof(short);
-	case ACCESSOR_DATA_TYPE::U_INT:
-	case ACCESSOR_DATA_TYPE::FLOAT:
+	case ACCESSOR_COMPONENT_TYPE::U_INT:
+	case ACCESSOR_COMPONENT_TYPE::FLOAT:
 		return sizeof(float);
 	default:
 		return 0;
 	}
 }
 
-enum class ACCESSOR_COMPONENT_TYPE : int
+enum class ACCESSOR_DATA_TYPE : int
 {
 	SCALAR = 64 + 1,
 	VEC2 = 2,
@@ -60,6 +60,29 @@ enum class ACCESSOR_COMPONENT_TYPE : int
 	VECTOR = 64 + 4,
 	MATRIX = 64 + 16
 };
+
+constexpr size_t CountOfType(ACCESSOR_DATA_TYPE type)
+{
+	switch (type)
+	{
+	case ACCESSOR_DATA_TYPE::SCALAR:
+		return 1;
+	case ACCESSOR_DATA_TYPE::VEC2:
+		return 2;
+	case ACCESSOR_DATA_TYPE::VEC3:
+		return 3;
+	case ACCESSOR_DATA_TYPE::VEC4:
+		return 4;
+	case ACCESSOR_DATA_TYPE::MAT2:
+		return 2 * 2;
+	case ACCESSOR_DATA_TYPE::MAT3:
+		return 3 * 3;
+	case ACCESSOR_DATA_TYPE::MAT4:
+		return 4 * 4;
+	default:
+		return 0;
+	}
+}
 
 enum class PRIMITIVE_MODE : int
 {
