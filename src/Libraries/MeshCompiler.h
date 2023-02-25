@@ -48,6 +48,8 @@ namespace SH_COMP
     static inline void ProcessModel(ModelData const&, ModelRef asset) noexcept;
     static inline void BuildHeaders(ModelRef asset) noexcept;
 
+    template<typename T>
+    static void FetchData(int accessorID, std::vector<T>& dst);
   public:
     static void LoadAndCompile(AssetPath path) noexcept;
 	};

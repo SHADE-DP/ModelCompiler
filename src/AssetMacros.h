@@ -16,7 +16,7 @@ typedef std::filesystem::path AssetPath;
 
 enum class BUFFER_TARGET : int
 {
-	ARRAY_BUFFER = 3496,
+	ARRAY_BUFFER = 34962,
 	ELEMENT_ARRAY_BUFFER = 34963
 };
 

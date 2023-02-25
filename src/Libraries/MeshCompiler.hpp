@@ -24,6 +24,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 #include "tiny_gltf.h"
 #include <map>
@@ -82,54 +83,25 @@ namespace SH_COMP
 
       try
       {
-        //meshIn.vertexPosition = FetchData<SHVec3>(primitive.attributes.at(ATT_POSITION.data()));
-        //meshIn.vertexNormal = FetchData<SHVec3>(primitive.attributes.at(ATT_NORMAL.data()));
-        //meshIn.vertexTangent = FetchData<SHVec3>(primitive.attributes.at(ATT_TANGENT.data()));
-        //meshIn.texCoords = FetchData<SHVec2>(primitive.attributes.at(ATT_TEXCOORD.data()));
+        FetchData(primitive.attributes.at(ATT_POSITION.data()), meshIn.vertexPosition);
+        FetchData(primitive.attributes.at(ATT_NORMAL.data()), meshIn.vertexNormal);
+        FetchData(primitive.attributes.at(ATT_TEXCOORD.data()), meshIn.texCoords);
 
-        auto accessor = &(*accessors)[primitive.attributes.at(ATT_POSITION.data())];
-        auto view = &(*bufferViews)[accessor->bufferView];
-        meshIn.vertexPosition.resize(accessor->count);
-        std::memcpy(
-          meshIn.vertexPosition.data(),
-          buffer + view->byteOffset,
-          view->byteLength
-        );
+        std::vector<unsigned short> indices_ushort;
+        FetchData(primitive.indices, indices_ushort);
+        meshIn.indices.resize(indices_ushort.size());
+        std::ranges::copy(indices_ushort, meshIn.indices.begin());
 
-        accessor = &(*accessors)[primitive.indices];
-        view = &(*bufferViews)[accessor->bufferView];
-        meshIn.indices.resize(accessor->count);
-        std::memcpy(
-          meshIn.indices.data(),
-          buffer + view->byteOffset,
-          view->byteLength
-        );
-
-        accessor = &(*accessors)[primitive.attributes.at(ATT_NORMAL.data())];
-        view = &(*bufferViews)[accessor->bufferView];
-        meshIn.vertexNormal.resize(accessor->count);
-        std::memcpy(
-          meshIn.vertexNormal.data(),
-          buffer + view->byteOffset,
-          view->byteLength
-        );
-
-        accessor = &(*accessors)[primitive.attributes.at(ATT_TEXCOORD.data())];
-        view = &(*bufferViews)[accessor->bufferView];
-        meshIn.texCoords.resize(accessor->count);
-        std::memcpy(
-          meshIn.texCoords.data(),
-          buffer + view->byteOffset,
-          view->byteLength
-        );
-
-        accessor = &(*accessors)[primitive.attributes.at(ATT_TANGENT.data())];
-        view = &(*bufferViews)[accessor->bufferView];
-        meshIn.vertexTangent.resize(accessor->count);
-        std::memcpy(
-          meshIn.vertexTangent.data(),
-          buffer + view->byteOffset,
-          view->byteLength
+        std::vector<SHVec4> intermediate;
+        FetchData(primitive.attributes.at(ATT_TANGENT.data()), intermediate);
+        meshIn.vertexTangent.resize(intermediate.size());
+        std::ranges::transform(
+          intermediate,
+			meshIn.vertexTangent.begin(),
+				[](auto const& inTan)
+	         {
+	           return SHVec3{ inTan.x, inTan.y, inTan.z };
+	         }
         );
       }
       catch (std::out_of_range e)
@@ -139,6 +111,20 @@ namespace SH_COMP
     }
 #endif
 
+  }
+
+  template <typename T>
+  void MeshCompiler::FetchData(int accessorID, std::vector<T>& dst)
+  {
+    auto const& accessor = (*accessors)[accessorID];
+    auto const& view = (*bufferViews)[accessor.bufferView];
+    dst.resize(3484);
+    std::cout << "buffer line\n";
+    std::memcpy(
+      dst.data(),
+      buffer + view.byteOffset,
+      view.byteLength
+    );
   }
 
   inline void MeshCompiler::BuildHeaders(ModelRef asset) noexcept

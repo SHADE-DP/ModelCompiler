@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 	}
 	
 	#else
-	SH_COMP::MeshCompiler::LoadAndCompile("racoon.gltf");
+	SH_COMP::MeshCompiler::LoadAndCompile("racoon_tiny.gltf");
 	#endif
 
 	return 0;
