@@ -44,7 +44,7 @@ namespace SH_COMP
     static BufferViewReference bufferViews;
     static BufferData buffer;
 
-  	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
+  	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
     static inline void ProcessModel(ModelData const&, ModelRef asset) noexcept;
     static inline void BuildHeaders(ModelRef asset) noexcept;
 
@@ -54,3 +54,5 @@ namespace SH_COMP
     static void LoadAndCompile(AssetPath path) noexcept;
 	};
 }
+
+#include "MeshCompiler.hpp"

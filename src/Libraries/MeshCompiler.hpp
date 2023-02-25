@@ -118,13 +118,30 @@ namespace SH_COMP
   {
     auto const& accessor = (*accessors)[accessorID];
     auto const& view = (*bufferViews)[accessor.bufferView];
-    dst.resize(3484);
-    std::cout << "buffer line\n";
+    auto const typeIdentifier{ static_cast<ACCESSOR_DATA_TYPE>(accessor.componentType) };
+    auto const sizeIdentifier{ SizeOfType(typeIdentifier) };
+    if (sizeof(T) == sizeIdentifier)
+    {
+      dst.resize(accessor.count);
+      std::memcpy(
+        dst.data(),
+        buffer + view.byteOffset,
+        view.byteLength
+      );
+      return;
+    }
+
+    std::vector<std::byte> tempData(view.byteLength);
     std::memcpy(
-      dst.data(),
+      tempData.data(),
       buffer + view.byteOffset,
       view.byteLength
     );
+
+    for (auto i{0}; i < accessor.count; i += sizeIdentifier)
+    {
+	    
+    }
   }
 
   inline void MeshCompiler::BuildHeaders(ModelRef asset) noexcept

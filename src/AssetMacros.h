@@ -30,6 +30,24 @@ enum class ACCESSOR_DATA_TYPE : int
 	FLOAT = 5126
 };
 
+constexpr size_t SizeOfType(ACCESSOR_DATA_TYPE type)
+{
+	switch(type)
+	{
+	case ACCESSOR_DATA_TYPE::BYTE:
+	case ACCESSOR_DATA_TYPE::U_BYTE:
+		return sizeof(char);
+	case ACCESSOR_DATA_TYPE::SHORT:
+	case ACCESSOR_DATA_TYPE::U_SHORT:
+		return sizeof(short);
+	case ACCESSOR_DATA_TYPE::U_INT:
+	case ACCESSOR_DATA_TYPE::FLOAT:
+		return sizeof(float);
+	default:
+		return 0;
+	}
+}
+
 enum class ACCESSOR_COMPONENT_TYPE : int
 {
 	SCALAR = 64 + 1,
