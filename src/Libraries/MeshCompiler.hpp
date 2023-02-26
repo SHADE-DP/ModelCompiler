@@ -240,9 +240,9 @@ namespace SH_COMP
           FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].rotationKeys);
 
         anim.nodes[channel.target_node].interpolation =
-	        sampler.interpolation == "LINEAR" ? AnimationInterpolation::LINEAR :
-	        sampler.interpolation == "STEP" ? AnimationInterpolation::STEP :
-	        sampler.interpolation == "CUBICSPLINE" ? AnimationInterpolation::CUBICSPLINE :
+	        sampler.interpolation == LINEAR_INTERPOLATION.data() ? AnimationInterpolation::LINEAR :
+	        sampler.interpolation == STEP_INTERPOLATION.data() ? AnimationInterpolation::STEP :
+	        sampler.interpolation == CUBICSPLINE_INTERPOLATION.data() ? AnimationInterpolation::CUBICSPLINE :
 	        AnimationInterpolation::DEFAULT;
       }
 

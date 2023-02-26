@@ -100,6 +100,10 @@ constexpr std::string_view SCALE_PATH{ "scale" };
 constexpr std::string_view ROTATION_PATH{ "rotation" };
 constexpr std::string_view WEIGHTS_PATH{ "weights" };
 
+constexpr std::string_view LINEAR_INTERPOLATION{ "LINEAR" };
+constexpr std::string_view STEP_INTERPOLATION{ "STEP" };
+constexpr std::string_view CUBICSPLINE_INTERPOLATION{ "CUBICSPLINE" };
+
 //Directory
 #ifdef _PUBLISH
 constexpr std::string_view ASSET_ROOT{ "Assets" };
