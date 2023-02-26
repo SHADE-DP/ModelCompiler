@@ -111,7 +111,7 @@ namespace SH_COMP
 
 			for (auto i{0}; i < header.animNodeCount; ++i)
 			{
-				WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
+				WriteAnimNode(file, header.nodeHeaders[i], data.nodes[i]);
 			}
     }
   }
@@ -124,13 +124,8 @@ namespace SH_COMP
     );
 
     file.write(
-      reinterpret_cast<char const*>(&node.pre),
-      sizeof(AnimationBehaviour)
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&node.post),
-      sizeof(AnimationBehaviour)
+      reinterpret_cast<char const*>(&node.interpolation),
+      sizeof(AnimationInterpolation)
     );
 
     uint32_t const keySize = node.positionKeys.size();

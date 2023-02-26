@@ -16,32 +16,27 @@
 
 namespace SH_COMP
 {
-	enum class AnimationBehaviour : uint8_t
+	enum class AnimationInterpolation : uint8_t
 	{
-		DEFAULT = 0x0,
-		CONSTANT = 0x1,
-		LINEAR = 0x2,
-		REPEAT = 0x3
+		DEFAULT = 0x1,
+		LINEAR = 0x1,
+		STEP = 0x2,
+		CUBICSPLINE = 0x3
+	};
+
+	// Base 
+	struct KeyBase
+	{
+		float time;
+		SHVec3 value;
 	};
 
 	// Smallest data containers
-	struct PositionKey
-	{
-		float time;
-		SHVec3 value;
-	};
+	struct PositionKey :KeyBase {};
 	
-	struct RotationKey
-	{
-		float time;
-		SHVec4 value;
-	};
+	struct RotationKey : KeyBase {};
 	
-	struct ScaleKey
-	{
-		float time;
-		SHVec3 value;
-	};
+	struct ScaleKey :KeyBase {};
 
 	// Headers for read/write
 	struct AnimNodeInfo
@@ -63,13 +58,11 @@ namespace SH_COMP
 	struct AnimNode
 	{
 		std::string name;
-		AnimationBehaviour pre;
-		AnimationBehaviour post;
+		AnimationInterpolation interpolation;
 
 		std::vector<PositionKey> positionKeys;
 		std::vector<RotationKey> rotationKeys;
 		std::vector<ScaleKey> scaleKeys;
-
 	};
 
 	struct AnimData
@@ -79,7 +72,7 @@ namespace SH_COMP
 		double duration;
 		double ticksPerSecond;
 
-		std::vector<AnimNode> nodeChannels;
+		std::vector<AnimNode> nodes;
 		//std::vector<aiMeshAnim*> meshChannels;
 		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
 	};

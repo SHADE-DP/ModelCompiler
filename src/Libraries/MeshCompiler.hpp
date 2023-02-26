@@ -162,6 +162,30 @@ namespace SH_COMP
     }
   }
 
+  template <typename T>
+  void MeshCompiler::FetchChannelKeyFrame(int targetNode, int inputAcc, int outputAcc, int nodeTarget, std::vector<T>& dst)
+  {
+    // ONLY ALLOW THIS FUNCTION TO BE USED ON KEY DATA STRUCT
+    static_assert(std::derived_from<T, KeyBase> == true);
+
+    std::vector<float> inputVec;
+    std::vector<SHVec3> outputVec;
+    FetchData(inputAcc, inputVec);
+    FetchData(outputAcc, outputVec);
+
+    dst.resize(inputVec.size());
+
+    std::ranges::transform(
+      inputVec,
+      outputVec,
+      dst.begin(),
+      [](float const& time, SHVec3 const& value)->T
+      {
+        return { time, value };
+      }
+    );
+  }
+
   inline void MeshCompiler::BuildHeaders(ModelRef asset) noexcept
   {
     // Mesh Headers
@@ -195,12 +219,34 @@ namespace SH_COMP
     asset.anims.resize(model.animations.size());
     for (auto i {0}; i < model.animations.size(); ++i)
     {
-      auto& animData{ model.animations[i] };
+      auto const& animData{ model.animations[i] };
       auto& anim{ asset.anims[i] };
 
       anim.name = animData.name;
 
+      for (auto const& channel : animData.channels)
+      {
+        auto const& sampler{ animData.samplers[channel.sampler] };
 
+        // Resize nodes vector to latest largest index called
+        if (anim.nodes.size() <= channel.target_node)
+          anim.nodes.resize(channel.target_node + 1);
+        
+        if (channel.target_path == TRANSLATION_PATH.data())
+          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].positionKeys);
+        else if (channel.target_path == SCALE_PATH.data())
+          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].scaleKeys);
+        else if (channel.target_path == ROTATION_PATH.data())
+          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].rotationKeys);
+
+        anim.nodes[channel.target_node].interpolation =
+	        sampler.interpolation == "LINEAR" ? AnimationInterpolation::LINEAR :
+	        sampler.interpolation == "STEP" ? AnimationInterpolation::STEP :
+	        sampler.interpolation == "CUBICSPLINE" ? AnimationInterpolation::CUBICSPLINE :
+	        AnimationInterpolation::DEFAULT;
+      }
+
+      std::cout << "all anim channels copied\n";
     }
   }
 }

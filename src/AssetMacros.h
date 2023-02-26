@@ -95,6 +95,11 @@ enum class PRIMITIVE_MODE : int
 	TRIANLE_FAN = 6
 };
 
+constexpr std::string_view TRANSLATION_PATH{ "translation" };
+constexpr std::string_view SCALE_PATH{ "scale" };
+constexpr std::string_view ROTATION_PATH{ "rotation" };
+constexpr std::string_view WEIGHTS_PATH{ "weights" };
+
 //Directory
 #ifdef _PUBLISH
 constexpr std::string_view ASSET_ROOT{ "Assets" };
