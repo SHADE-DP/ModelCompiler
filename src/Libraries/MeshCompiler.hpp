@@ -57,7 +57,7 @@ namespace SH_COMP
     }
 
     ProcessModel(model, asset);
-    ProcessAnimations(model, asset);
+    ProcessAnimationChannels(model, asset);
   }
 
   inline void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
@@ -214,7 +214,7 @@ namespace SH_COMP
     delete asset;
   }
 
-  inline void MeshCompiler::ProcessAnimations(ModelData const& model, ModelRef asset) noexcept
+  inline void MeshCompiler::ProcessAnimationChannels(ModelData const& model, ModelRef asset) noexcept
   {
     asset.anims.resize(model.animations.size());
     for (auto i {0}; i < model.animations.size(); ++i)
@@ -248,5 +248,10 @@ namespace SH_COMP
 
       std::cout << "all anim channels copied\n";
     }
+  }
+
+  inline void MeshCompiler::ProcessNodes(ModelData const& model, ModelRef asset) noexcept
+  {
+
   }
 }

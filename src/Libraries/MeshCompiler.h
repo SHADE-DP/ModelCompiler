@@ -47,7 +47,8 @@ namespace SH_COMP
   	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
 
     static inline void ProcessModel(ModelData const& model, ModelRef asset) noexcept;
-    static inline void ProcessAnimations(ModelData const& model, ModelRef asset) noexcept;
+    static inline void ProcessAnimationChannels(ModelData const& model, ModelRef asset) noexcept;
+    static inline void ProcessNodes(ModelData const& model, ModelRef asset) noexcept;
 
     static inline void BuildHeaders(ModelRef asset) noexcept;
 
