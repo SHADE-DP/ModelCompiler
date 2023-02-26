@@ -35,4 +35,7 @@ namespace SH_COMP
 			return true;
 		}
 	};
+
+	using IndexType = uint32_t;
+
 }

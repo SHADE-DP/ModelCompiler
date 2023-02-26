@@ -45,7 +45,10 @@ namespace SH_COMP
     static BufferData buffer;
 
   	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
-    static inline void ProcessModel(ModelData const&, ModelRef asset) noexcept;
+
+    static inline void ProcessModel(ModelData const& model, ModelRef asset) noexcept;
+    static inline void ProcessAnimations(ModelData const& model, ModelRef asset) noexcept;
+
     static inline void BuildHeaders(ModelRef asset) noexcept;
 
     template<typename T>

@@ -41,7 +41,7 @@ namespace SH_COMP
 		std::vector<SHVec3> vertexTangent;
 		std::vector<SHVec3> vertexNormal;
 		std::vector<SHVec2> texCoords;
-		std::vector<uint32_t> indices;
+		std::vector<IndexType> indices;
 		std::vector<MeshBoneInfo> bonesInfo;
 		std::vector<MeshBone> bones;
 	};

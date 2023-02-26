@@ -36,7 +36,7 @@ namespace SH_COMP
   BufferViewReference MeshCompiler::bufferViews{ nullptr };
   BufferData MeshCompiler::buffer{ nullptr };
 
-  void MeshCompiler::LoadFromFile(AssetPath path, ModelRef asset) noexcept
+  inline void MeshCompiler::LoadFromFile(AssetPath path, ModelRef asset) noexcept
   {
     ModelData model;
     tinygltf::TinyGLTF loader;
@@ -57,9 +57,10 @@ namespace SH_COMP
     }
 
     ProcessModel(model, asset);
+    ProcessAnimations(model, asset);
   }
 
-  void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
+  inline void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
   {
 #if 0
     for (auto i {0}; i < 2; ++i)
@@ -86,22 +87,18 @@ namespace SH_COMP
         FetchData(primitive.attributes.at(ATT_POSITION.data()), meshIn.vertexPosition);
         FetchData(primitive.attributes.at(ATT_NORMAL.data()), meshIn.vertexNormal);
         FetchData(primitive.attributes.at(ATT_TEXCOORD.data()), meshIn.texCoords);
-
-        std::vector<unsigned short> indices_ushort;
-        FetchData(primitive.indices, indices_ushort);
-        meshIn.indices.resize(indices_ushort.size());
-        std::ranges::copy(indices_ushort, meshIn.indices.begin());
+        FetchData(primitive.indices, meshIn.indices);
 
         std::vector<SHVec4> intermediate;
         FetchData(primitive.attributes.at(ATT_TANGENT.data()), intermediate);
         meshIn.vertexTangent.resize(intermediate.size());
         std::ranges::transform(
           intermediate,
-			meshIn.vertexTangent.begin(),
-				[](auto const& inTan)
-	         {
-	           return SHVec3{ inTan.x, inTan.y, inTan.z };
-	         }
+					meshIn.vertexTangent.begin(),
+          [](auto const& inTan)
+		       {
+		         return SHVec3{ inTan.x, inTan.y, inTan.z };
+		       }
         );
       }
       catch (std::out_of_range e)
@@ -120,9 +117,10 @@ namespace SH_COMP
     auto const& view = (*bufferViews)[accessor.bufferView];
     auto const typeIdentifier{ static_cast<ACCESSOR_COMPONENT_TYPE>(accessor.componentType) };
     auto const sizeIdentifier{ SizeOfType(typeIdentifier) };
-    auto const componentCount{ CountOfType(accessor.type) };
+    auto const componentCount{ CountOfType(static_cast<ACCESSOR_DATA_TYPE>(accessor.type))};
+    auto const totalStrideBytes{ sizeIdentifier * componentCount };
     dst.resize(accessor.count);
-    if (sizeof(T) == sizeIdentifier * componentCount)
+    if (sizeof(T) == totalStrideBytes)
     {
       std::memcpy(
         dst.data(),
@@ -140,18 +138,27 @@ namespace SH_COMP
     );
 
     auto srcPtr{ tempData.data() };
-    auto dstPtr{ dst.data() };
+    T* dstPtr{ dst.data() };
     size_t index{ 0 };
     for (auto i{0}; i < accessor.count; ++i, ++index)
     {
-      std::memcpy(
-        dstPtr,
-        srcPtr,
-        sizeIdentifier
-      );
+      auto srcCompPtr{ srcPtr };
+      auto dstCompPtr{ reinterpret_cast<IndexType*>(dstPtr)};
+      for (auto j{0}; j < componentCount; ++j)
+      {
+        std::memcpy(
+          dstPtr,
+          srcPtr,
+          sizeIdentifier
+        );
 
-      srcPtr += sizeIdentifier;
-      dstPtr += sizeof(T);
+        srcCompPtr += sizeIdentifier;
+        ++dstCompPtr;
+      }
+
+      srcPtr += totalStrideBytes;
+
+      ++dstPtr;
     }
   }
 
@@ -181,5 +188,19 @@ namespace SH_COMP
     MeshWriter::CompileMeshBinary(path, *asset);
 
     delete asset;
+  }
+
+  inline void MeshCompiler::ProcessAnimations(ModelData const& model, ModelRef asset) noexcept
+  {
+    asset.anims.resize(model.animations.size());
+    for (auto i {0}; i < model.animations.size(); ++i)
+    {
+      auto& animData{ model.animations[i] };
+      auto& anim{ asset.anims[i] };
+
+      anim.name = animData.name;
+
+
+    }
   }
 }
