@@ -56,22 +56,13 @@ namespace SH_COMP
       std::exit(1);
     }
 
-    ProcessModel(model, asset);
+    ProcessMesh(model, asset);
     ProcessAnimationChannels(model, asset);
+    ProcessRigNodes(model, asset);
   }
 
-  inline void MeshCompiler::ProcessModel(ModelData const& data, ModelRef asset) noexcept
+  inline void MeshCompiler::ProcessMesh(ModelData const& data, ModelRef asset) noexcept
   {
-#if 0
-    for (auto i {0}; i < 2; ++i)
-    {
-      auto& mesh{ asset.meshes.emplace_back() };
-      mesh.vertexNormal.resize(3883);
-      mesh.vertexPosition.resize(3883);
-      mesh.vertexTangent.resize(3883);
-      mesh.texCoords.resize(3883);
-    }
-#else
     accessors = &data.accessors;
     bufferViews = &data.bufferViews;
     buffer = data.buffers[0].data.data();
@@ -105,9 +96,31 @@ namespace SH_COMP
       {
 	      std::cout << "[Model Compiler] Failed to load critical data from gltf\n";
       }
-    }
-#endif
 
+      try
+      {
+        std::vector<SHVec4>weights;
+        std::vector<SHVec4i>joints;
+        FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), weights);
+        FetchData(primitive.attributes.at(ATT_JOINT.data()), joints);
+        meshIn.weights.resize(weights.size());
+        std::ranges::transform(
+          weights,
+          joints,
+          meshIn.weights.begin(),
+          [](SHVec4 const& weights, SHVec4i const& joints) ->VertexWeights
+          {
+            return { weights, joints };
+          }
+        );
+
+        std::cout << "hi\n";
+      }
+      catch(std::out_of_range e)
+      {
+        std::cout << "No weights and joints found for mesh: " << mesh.name << std::endl;
+      }
+    }
   }
 
   template <typename T>
@@ -147,8 +160,8 @@ namespace SH_COMP
       for (auto j{0}; j < componentCount; ++j)
       {
         std::memcpy(
-          dstPtr,
-          srcPtr,
+          dstCompPtr,
+          srcCompPtr,
           sizeIdentifier
         );
 
@@ -169,7 +182,7 @@ namespace SH_COMP
     static_assert(std::derived_from<T, KeyBase> == true);
 
     std::vector<float> inputVec;
-    std::vector<SHVec3> outputVec;
+    std::vector<SHVec4> outputVec;
     FetchData(inputAcc, inputVec);
     FetchData(outputAcc, outputVec);
 
@@ -179,9 +192,9 @@ namespace SH_COMP
       inputVec,
       outputVec,
       dst.begin(),
-      [](float const& time, SHVec3 const& value)->T
+      [](float const& time, SHVec4 const& value)->T
       {
-        return { time, value };
+        return { time, {value.x, value.y, value.z} };
       }
     );
   }
@@ -199,11 +212,24 @@ namespace SH_COMP
       head.charCount = mesh.name.size();
       head.indexCount = mesh.indices.size();
       head.vertexCount = mesh.vertexPosition.size();
-      head.boneCount = mesh.bonesInfo.size();
+      head.hasWeights = mesh.weights.empty() ? false : true;
+    }
+
+    // Anim Headers
+    asset.animHeaders.resize(asset.anims.size());
+    asset.header.animCount = asset.anims.size();
+    for (auto i{ 0 }; i < asset.header.animCount; ++i)
+    {
+      auto const& anim = asset.anims[i];
+      auto& head = asset.animHeaders[i];
+
+      head.charCount = anim.name.size();
+      head.animNodeCount = anim.nodes.size();
+      head.frameCount = anim.nodes[0].positionKeys.size();
     }
   }
 
-  void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
+  inline void MeshCompiler::LoadAndCompile(AssetPath path) noexcept
   {
     auto const asset = new ModelAsset();
 
@@ -214,12 +240,12 @@ namespace SH_COMP
     delete asset;
   }
 
-  inline void MeshCompiler::ProcessAnimationChannels(ModelData const& model, ModelRef asset) noexcept
+  inline void MeshCompiler::ProcessAnimationChannels(ModelData const& data, ModelRef asset) noexcept
   {
-    asset.anims.resize(model.animations.size());
-    for (auto i {0}; i < model.animations.size(); ++i)
+    asset.anims.resize(data.animations.size());
+    for (auto i {0}; i < data.animations.size(); ++i)
     {
-      auto const& animData{ model.animations[i] };
+      auto const& animData{ data.animations[i] };
       auto& anim{ asset.anims[i] };
 
       anim.name = animData.name;
@@ -250,8 +276,43 @@ namespace SH_COMP
     }
   }
 
-  inline void MeshCompiler::ProcessNodes(ModelData const& model, ModelRef asset) noexcept
+  inline void MeshCompiler::ProcessRigNodes(ModelData const& data, ModelRef asset) noexcept
   {
+    if (asset.anims.empty())
+      return;
 
+    for (auto const& node : data.nodes)
+    {
+      if (
+        node.rotation.empty()     &&
+        node.translation.empty()  &&
+        node.translation.empty()
+        )
+        continue;
+
+      std::vector<IndexType> intermediate(node.children.begin(), node.children.end());
+
+      asset.rig.nodes.emplace_back(
+        node.name,
+        static_cast<std::vector<IndexType> const&>(intermediate),
+        node.rotation,
+        node.translation,
+        node.matrix,
+        node.weights
+      );
+    }
+    for (auto const& skin : data.skins)
+    {
+      std::vector<SHMat4> inverseBindMatrices;
+      FetchData(skin.inverseBindMatrices, inverseBindMatrices);
+
+      std::vector<IndexType> joints(skin.joints.begin(), skin.joints.end());
+      auto& nodes{ asset.rig.nodes };
+      auto matrix{ inverseBindMatrices.begin() };
+      for (auto const& joint : joints)
+      {
+        nodes[joint].inverseBindMatrix = *(matrix++);
+      }
+    }
   }
 }

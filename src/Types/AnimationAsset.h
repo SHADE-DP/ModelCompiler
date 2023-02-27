@@ -38,26 +38,16 @@ namespace SH_COMP
 	
 	struct ScaleKey :KeyBase {};
 
-	// Headers for read/write
-	struct AnimNodeInfo
-	{
-		uint32_t charCount;
-		uint32_t posKeyCount;
-		uint32_t rotKeyCount;
-		uint32_t scaKeyCount;
-	};
-
 	struct AnimDataHeader
 	{
 		uint32_t charCount;
 		uint32_t animNodeCount;
-		std::vector<AnimNodeInfo> nodeHeaders;
+		uint32_t frameCount;
 	};
 
 	// Main data containers
 	struct AnimNode
 	{
-		std::string name;
 		AnimationInterpolation interpolation;
 
 		std::vector<PositionKey> positionKeys;
@@ -72,8 +62,7 @@ namespace SH_COMP
 		double duration;
 		double ticksPerSecond;
 
+		//One node represents the animation transforms for one bone in the rig
 		std::vector<AnimNode> nodes;
-		//std::vector<aiMeshAnim*> meshChannels;
-		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
 	};
 }

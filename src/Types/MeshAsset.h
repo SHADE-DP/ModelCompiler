@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <array>
 
 #include "PseudoMath.h"
 
@@ -12,37 +13,26 @@ namespace SH_COMP
 		uint32_t vertexCount;
 		uint32_t indexCount;
 		uint32_t charCount;
-		uint32_t boneCount;
+		bool hasWeights;
 	};
 
-	struct MeshBoneInfo
+	struct VertexWeights
 	{
-		uint32_t charCount;
-		uint32_t weightCount;
-	};
-
-	struct BoneWeight
-	{
-		uint32_t index;
-		float weight;
-	};
-
-	struct MeshBone
-	{
-		std::string name;
-		SHMat4 offset;
-		std::vector<BoneWeight> weights;
+		SHVec4 weights;
+		SHVec4i joints;
 	};
 
 	struct MeshData
 	{
 		std::string name;
+
 		std::vector<SHVec3> vertexPosition;
 		std::vector<SHVec3> vertexTangent;
 		std::vector<SHVec3> vertexNormal;
 		std::vector<SHVec2> texCoords;
 		std::vector<IndexType> indices;
-		std::vector<MeshBoneInfo> bonesInfo;
-		std::vector<MeshBone> bones;
+
+		//Variable data
+		std::vector<VertexWeights> weights;
 	};
 }

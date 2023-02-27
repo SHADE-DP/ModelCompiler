@@ -22,13 +22,11 @@ namespace SH_COMP
 
     static void WriteMeshData(FileReference file, std::vector<MeshDataHeader> const& headers, std::vector<MeshData> const& meshes);
     static void WriteAnimData(FileReference file, std::vector<AnimDataHeader> const& headers, std::vector<AnimData> const& anims);
-    static void WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node);
+    static void WriteAnimNode(FileReference file, AnimNode const& node);
 
     static void WriteRig(FileReference file, RigData const& data);
     static void WriteRigHeader(FileReference file, RigDataHeader const& header);
-    static void WriteRigNodeData(FileReference file, RigData const& rig, RigWriteNode*& treeRoot);
-    static void WriteRigTree(FileReference file, RigWriteNode const* root);
-    //static void WriteRigNodes(FileReference file,  RigDataHeader const& header, RigNode const* root);
+    static void WriteRigNodeData(FileReference file, RigData const& rig);
 
     static void WriteHeaders(FileReference file, ModelConstRef asset);
     static void WriteData(FileReference file, ModelConstRef asset);

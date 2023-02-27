@@ -46,9 +46,9 @@ namespace SH_COMP
 
   	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
 
-    static inline void ProcessModel(ModelData const& model, ModelRef asset) noexcept;
-    static inline void ProcessAnimationChannels(ModelData const& model, ModelRef asset) noexcept;
-    static inline void ProcessNodes(ModelData const& model, ModelRef asset) noexcept;
+    static inline void ProcessMesh(ModelData const& data, ModelRef asset) noexcept;
+    static inline void ProcessAnimationChannels(ModelData const& data, ModelRef asset) noexcept;
+    static inline void ProcessRigNodes(ModelData const& data, ModelRef asset) noexcept;
 
     static inline void BuildHeaders(ModelRef asset) noexcept;
 
@@ -58,7 +58,7 @@ namespace SH_COMP
     template<typename T>
     static void FetchChannelKeyFrame(int targetNode, int inputAcc, int outputAcc, int nodeTarget, std::vector<T>& dst);
   public:
-    static void LoadAndCompile(AssetPath path) noexcept;
+    static inline void LoadAndCompile(AssetPath path) noexcept;
 	};
 }
 

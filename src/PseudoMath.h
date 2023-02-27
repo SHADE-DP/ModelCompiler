@@ -18,6 +18,11 @@ namespace SH_COMP
 		float x, y, z, w;
 	};
 
+	struct SHVec4i
+	{
+		uint32_t x, y, z, w;
+	};
+
 	struct SHMat4
 	{
 		float data[16];

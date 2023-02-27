@@ -23,6 +23,7 @@ project "ModelCompiler"
   {
     "%{prj.location}/src/**.h",
     "%{prj.location}/src/**.cpp",
+    "%{prj.location}/src/**.hpp"
   }
 
   externalincludedirs
