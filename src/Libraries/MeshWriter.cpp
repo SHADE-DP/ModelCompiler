@@ -145,7 +145,53 @@ namespace SH_COMP
 
   void MeshWriter::WriteRigNodeData(FileReference file, RigData const& rig)
   {
-    //TODO reimplement rig node data write
+    std::vector<IndexType> treeNodeWrite;
+    for (auto const& node : rig.nodes)
+    {
+      file.write(
+        node.name.data(),
+        node.name.size()
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(&node.inverseBindMatrix),
+        sizeof(SHMat4)
+      );
+
+      //Build data flags
+      NodeDataFlag flag{ 0 };
+
+      if (!node.rotation.empty())
+        flag &= NODE_DATA_ROTATION;
+      if (!node.scale.empty())
+        flag &= NODE_DATA_SCALE;
+      if (!node.translation.empty())
+        flag &= NODE_DATA_TRANSLATION;
+      if (!node.matrix.empty())
+        flag &= NODE_DATA_MATRIX;
+
+      file.put(flag);
+
+      file.write(
+        reinterpret_cast<char const*>(node.rotation.data()),
+        sizeof(double) * NODE_COMPONENT_COUNT_ROTATION
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.scale.data()),
+        sizeof(double) * NODE_COMPONENT_COUNT_SCALE
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.translation.data()),
+        sizeof(double) * NODE_COMPONENT_COUNT_TRANSLATION
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.matrix.data()),
+        sizeof(double) * NODE_COMPONENT_COUNT_MATRIX
+      );
+    }
   }
 
   void MeshWriter::WriteHeaders(FileReference file, ModelConstRef asset)

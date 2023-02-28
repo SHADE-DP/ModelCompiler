@@ -14,7 +14,12 @@ namespace SH_COMP
 	constexpr NodeDataFlag NODE_DATA_SCALE				= 0b00010;
 	constexpr NodeDataFlag NODE_DATA_TRANSLATION	= 0b00100;
 	constexpr NodeDataFlag NODE_DATA_MATRIX				= 0b01000;
-	constexpr NodeDataFlag NODE_DATA_WEIGHTS			= 0b10000;
+	//constexpr NodeDataFlag NODE_DATA_WEIGHTS			= 0b10000;
+
+	constexpr size_t NODE_COMPONENT_COUNT_ROTATION{ 4 };
+	constexpr size_t NODE_COMPONENT_COUNT_SCALE{ 3 };
+	constexpr size_t NODE_COMPONENT_COUNT_TRANSLATION{ 3 };
+	constexpr size_t NODE_COMPONENT_COUNT_MATRIX{ 16 };
 
 	struct RigDataHeader
 	{
@@ -32,8 +37,8 @@ namespace SH_COMP
 			rotation,
 			scale,
 			translation,
-			matrix,
-			weights;
+			matrix;
+			//weights;
 		SHMat4 inverseBindMatrix;
 	};
 

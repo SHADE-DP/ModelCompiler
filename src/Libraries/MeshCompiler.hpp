@@ -297,8 +297,8 @@ namespace SH_COMP
         static_cast<std::vector<IndexType> const&>(intermediate),
         node.rotation,
         node.translation,
-        node.matrix,
-        node.weights
+        node.matrix
+        //node.weights
       );
     }
     for (auto const& skin : data.skins)
