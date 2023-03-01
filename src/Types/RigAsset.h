@@ -10,20 +10,16 @@ namespace SH_COMP
 {
 	using NodeDataFlag = unsigned char;
 
-	constexpr NodeDataFlag NODE_DATA_ROTATION			= 0b00001;
-	constexpr NodeDataFlag NODE_DATA_SCALE				= 0b00010;
-	constexpr NodeDataFlag NODE_DATA_TRANSLATION	= 0b00100;
-	constexpr NodeDataFlag NODE_DATA_MATRIX				= 0b01000;
+	constexpr NodeDataFlag NODE_DATA_ROTATION			= 0b0001;
+	constexpr NodeDataFlag NODE_DATA_SCALE				= 0b0010;
+	constexpr NodeDataFlag NODE_DATA_TRANSLATION	= 0b0100;
+	constexpr NodeDataFlag NODE_DATA_MATRIX				= 0b1000;
 	//constexpr NodeDataFlag NODE_DATA_WEIGHTS			= 0b10000;
-
-	constexpr size_t NODE_COMPONENT_COUNT_ROTATION{ 4 };
-	constexpr size_t NODE_COMPONENT_COUNT_SCALE{ 3 };
-	constexpr size_t NODE_COMPONENT_COUNT_TRANSLATION{ 3 };
-	constexpr size_t NODE_COMPONENT_COUNT_MATRIX{ 16 };
 
 	struct RigDataHeader
 	{
 		uint32_t nodeCount;
+		IndexType startNode;
 		std::vector<uint32_t> charCounts;
 		std::vector<uint32_t> childCount;
 		std::vector<NodeDataFlag> dataFlags;

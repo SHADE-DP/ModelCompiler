@@ -128,6 +128,7 @@ namespace SH_COMP
   {
     WriteRigHeader(file, data.header);
     WriteRigNodeData(file, data);
+    WriteRigStructure(file, data);
   }
 
   void MeshWriter::WriteRigHeader(FileReference file, RigDataHeader const& header)
@@ -174,23 +175,60 @@ namespace SH_COMP
 
       file.write(
         reinterpret_cast<char const*>(node.rotation.data()),
-        sizeof(double) * NODE_COMPONENT_COUNT_ROTATION
+        sizeof(double) * node.rotation.size()
       );
 
       file.write(
         reinterpret_cast<char const*>(node.scale.data()),
-        sizeof(double) * NODE_COMPONENT_COUNT_SCALE
+        sizeof(double) * node.scale.size()
       );
 
       file.write(
         reinterpret_cast<char const*>(node.translation.data()),
-        sizeof(double) * NODE_COMPONENT_COUNT_TRANSLATION
+        sizeof(double) * node.translation.size()
       );
 
       file.write(
         reinterpret_cast<char const*>(node.matrix.data()),
-        sizeof(double) * NODE_COMPONENT_COUNT_MATRIX
+        sizeof(double) * node.matrix.size()
       );
+    }
+  }
+
+  void MeshWriter::WriteRigStructure(FileReference file, RigData const& rig)
+  {
+    std::queue<std::pair<IndexType, NodeAsset const*>> nodeQueue;
+    nodeQueue.push(
+      std::make_pair(
+        rig.header.startNode,
+        rig.nodes.data() + rig.header.startNode
+      )
+    );
+
+    while (!nodeQueue.empty())
+    {
+      auto const currentPair = nodeQueue.front();
+      auto const& node = *currentPair.second;
+      nodeQueue.pop();
+
+      file.write(
+        reinterpret_cast<char const*>(&currentPair.first),
+        sizeof(IndexType)
+      );
+
+      auto const childCount{ static_cast<uint32_t>(node.children.size()) };
+      file.write(
+        reinterpret_cast<char const*>(&childCount),
+        sizeof(uint32_t)
+      );
+
+      for (auto const& child : node.children)
+      {
+        nodeQueue.push(std::make_pair(
+          child,
+          rig.nodes.data() + child
+        ));
+      }
     }
   }
 

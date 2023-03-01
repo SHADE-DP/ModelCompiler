@@ -301,6 +301,7 @@ namespace SH_COMP
         //node.weights
       );
     }
+
     for (auto const& skin : data.skins)
     {
       std::vector<SHMat4> inverseBindMatrices;
@@ -314,5 +315,6 @@ namespace SH_COMP
         nodes[joint].inverseBindMatrix = *(matrix++);
       }
     }
+    asset.rig.header.startNode = data.skins[0].joints[0];
   }
 }
