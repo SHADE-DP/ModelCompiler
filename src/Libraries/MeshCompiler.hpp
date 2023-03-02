@@ -176,7 +176,7 @@ namespace SH_COMP
   }
 
   template <typename T>
-  void MeshCompiler::FetchChannelKeyFrame(int targetNode, int inputAcc, int outputAcc, int nodeTarget, std::vector<T>& dst)
+  void MeshCompiler::FetchChannelKeyFrame(int inputAcc, int outputAcc, std::vector<T>& dst)
   {
     // ONLY ALLOW THIS FUNCTION TO BE USED ON KEY DATA STRUCT
     static_assert(std::derived_from<T, KeyBase> == true);
@@ -194,7 +194,7 @@ namespace SH_COMP
       dst.begin(),
       [](float const& time, SHVec4 const& value)->T
       {
-        return { time, {value.x, value.y, value.z} };
+        return { time, value };
       }
     );
   }
@@ -259,11 +259,11 @@ namespace SH_COMP
           anim.nodes.resize(channel.target_node + 1);
         
         if (channel.target_path == TRANSLATION_PATH.data())
-          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].positionKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].positionKeys);
         else if (channel.target_path == SCALE_PATH.data())
-          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].scaleKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].scaleKeys);
         else if (channel.target_path == ROTATION_PATH.data())
-          FetchChannelKeyFrame(channel.target_node, sampler.input, sampler.output, channel.target_node, anim.nodes[channel.target_node].rotationKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].rotationKeys);
 
         anim.nodes[channel.target_node].interpolation =
 	        sampler.interpolation == LINEAR_INTERPOLATION.data() ? AnimationInterpolation::LINEAR :

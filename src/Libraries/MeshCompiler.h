@@ -56,7 +56,7 @@ namespace SH_COMP
     static void FetchData(int accessorID, std::vector<T>& dst);
 
     template<typename T>
-    static void FetchChannelKeyFrame(int targetNode, int inputAcc, int outputAcc, int nodeTarget, std::vector<T>& dst);
+    static void FetchChannelKeyFrame(int inputAcc, int outputAcc, std::vector<T>& dst);
   public:
     static inline void LoadAndCompile(AssetPath path) noexcept;
 	};
