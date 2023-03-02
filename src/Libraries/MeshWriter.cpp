@@ -58,10 +58,16 @@ namespace SH_COMP
 	    );
 
       if (header.hasWeights)
-	      file.write(
-	        reinterpret_cast<char const*>(asset.weights.data()),
-	        sizeof(VertexWeights) * header.vertexCount
-	      );
+      {
+        file.write(
+          reinterpret_cast<char const*>(asset.weights.data()),
+          sizeof(SHVec4) * header.vertexCount
+        );
+        file.write(
+          reinterpret_cast<char const*>(asset.joints.data()),
+          sizeof(SHVec4i) * header.vertexCount
+        );
+      }
     }
   }
 

@@ -15,12 +15,6 @@ namespace SH_COMP
 		bool hasWeights;
 	};
 
-	struct VertexWeights
-	{
-		SHVec4 weights;
-		SHVec4i joints;
-	};
-
 	struct MeshData
 	{
 		std::string name;
@@ -32,6 +26,7 @@ namespace SH_COMP
 		std::vector<IndexType> indices;
 
 		//Variable data
-		std::vector<VertexWeights> weights;
+		std::vector<SHVec4> weights;
+		std::vector<SHVec4i> joints;
 	};
 }

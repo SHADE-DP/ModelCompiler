@@ -99,20 +99,8 @@ namespace SH_COMP
 
       try
       {
-        std::vector<SHVec4>weights;
-        std::vector<SHVec4i>joints;
-        FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), weights);
-        FetchData(primitive.attributes.at(ATT_JOINT.data()), joints);
-        meshIn.weights.resize(weights.size());
-        std::ranges::transform(
-          weights,
-          joints,
-          meshIn.weights.begin(),
-          [](SHVec4 const& weights, SHVec4i const& joints) ->VertexWeights
-          {
-            return { weights, joints };
-          }
-        );
+        FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), meshIn.weights);
+        FetchData(primitive.attributes.at(ATT_JOINT.data()), meshIn.joints);
 
         std::cout << "hi\n";
       }
