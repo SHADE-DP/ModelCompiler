@@ -139,6 +139,11 @@ namespace SH_COMP
     );
 
     file.write(
+      reinterpret_cast<char const*>(&header.startNode),
+      sizeof(uint32_t)
+    );
+
+    file.write(
       reinterpret_cast<char const*>(header.charCounts.data()),
       sizeof(uint32_t) * header.nodeCount
     );

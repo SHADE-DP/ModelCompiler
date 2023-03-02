@@ -21,8 +21,6 @@ namespace SH_COMP
 		uint32_t nodeCount;
 		IndexType startNode;
 		std::vector<uint32_t> charCounts;
-		std::vector<uint32_t> childCount;
-		std::vector<NodeDataFlag> dataFlags;
 	};
 
 	struct NodeAsset

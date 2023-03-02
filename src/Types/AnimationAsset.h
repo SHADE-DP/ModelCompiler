@@ -28,15 +28,23 @@ namespace SH_COMP
 	struct KeyBase
 	{
 		float time;
-		SHVec3 value;
 	};
 
 	// Smallest data containers
-	struct PositionKey :KeyBase {};
+	struct PositionKey :KeyBase
+	{
+		SHVec3 value;
+	};
 	
-	struct RotationKey : KeyBase {};
+	struct RotationKey : KeyBase
+	{
+		SHVec4 value;
+	};
 	
-	struct ScaleKey :KeyBase {};
+	struct ScaleKey :KeyBase
+	{
+		SHVec3 value;
+	};
 
 	struct AnimDataHeader
 	{
