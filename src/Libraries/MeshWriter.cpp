@@ -174,13 +174,13 @@ namespace SH_COMP
       NodeDataFlag flag{ 0 };
 
       if (!node.rotation.empty())
-        flag &= NODE_DATA_ROTATION;
+        flag |= NODE_DATA_ROTATION;
       if (!node.scale.empty())
-        flag &= NODE_DATA_SCALE;
+        flag |= NODE_DATA_SCALE;
       if (!node.translation.empty())
-        flag &= NODE_DATA_TRANSLATION;
+        flag |= NODE_DATA_TRANSLATION;
       if (!node.matrix.empty())
-        flag &= NODE_DATA_MATRIX;
+        flag |= NODE_DATA_MATRIX;
 
       file.put(flag);
 

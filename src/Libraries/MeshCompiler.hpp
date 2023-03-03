@@ -101,8 +101,6 @@ namespace SH_COMP
       {
         FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), meshIn.weights);
         FetchData(primitive.attributes.at(ATT_JOINT.data()), meshIn.joints);
-
-        std::cout << "hi\n";
       }
       catch(std::out_of_range e)
       {
@@ -260,7 +258,8 @@ namespace SH_COMP
 	        AnimationInterpolation::DEFAULT;
       }
 
-      std::cout << "all anim channels copied\n";
+      anim.duration = (anim.nodes[0].positionKeys.end() - 1)->time;
+      anim.ticksPerSecond = 1.f;
     }
   }
 
@@ -268,19 +267,18 @@ namespace SH_COMP
   {
     if (asset.anims.empty())
       return;
+    
+    auto& rig = asset.rig;
+    auto& header = rig.header;
 
     for (auto const& node : data.nodes)
     {
-      if (
-        node.rotation.empty()     &&
-        node.translation.empty()  &&
-        node.translation.empty()
-        )
+      if (node.mesh > -1)
         continue;
 
       std::vector<IndexType> intermediate(node.children.begin(), node.children.end());
 
-      asset.rig.nodes.emplace_back(
+      rig.nodes.emplace_back(
         node.name,
         static_cast<std::vector<IndexType> const&>(intermediate),
         node.rotation,
@@ -288,6 +286,7 @@ namespace SH_COMP
         node.matrix
         //node.weights
       );
+      header.charCounts.emplace_back(node.name.size());
     }
 
     for (auto const& skin : data.skins)
@@ -296,13 +295,16 @@ namespace SH_COMP
       FetchData(skin.inverseBindMatrices, inverseBindMatrices);
 
       std::vector<IndexType> joints(skin.joints.begin(), skin.joints.end());
-      auto& nodes{ asset.rig.nodes };
+      auto& nodes{ rig.nodes };
       auto matrix{ inverseBindMatrices.begin() };
       for (auto const& joint : joints)
       {
         nodes[joint].inverseBindMatrix = *(matrix++);
       }
     }
-    asset.rig.header.startNode = data.skins[0].joints[0];
+
+    //Build header
+    header.startNode = data.skins[0].joints[0];
+    header.nodeCount = rig.nodes.size();
   }
 }
