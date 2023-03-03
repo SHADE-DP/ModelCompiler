@@ -18,10 +18,11 @@ int main(int argc, char* argv[])
 {	
 	std::vector<std::string> paths;
 
-	#if 0
+	#if 1
 
 	if (argc == 1)
 	{
+		#if 0
 		if (std::filesystem::is_directory(ASSET_ROOT))
 		{
 			for (auto& dir : 
@@ -41,6 +42,18 @@ int main(int argc, char* argv[])
 			std::cout << "Default path not found!" << std::endl;
 			return 1;
 		}
+		#else
+		for (auto& dir : std::filesystem::directory_iterator{ "./" })
+		{
+				if (dir.path().extension().string() == GLTF_EXTENSION || 
+					dir.path().extension().string() == FBX_EXTENSION)
+				{
+					auto path = dir.path();
+					path.make_preferred();
+					paths.push_back(path.string());
+				}
+		}
+		#endif
 	}
 	else if (argc > 1)
 	{
@@ -59,7 +72,7 @@ int main(int argc, char* argv[])
 	#else
 	(void)argc;
 	(void)argv;
-	SH_COMP::MeshCompiler::LoadAndCompile("racoon_tiny.gltf");
+	SH_COMP::MeshCompiler::LoadAndCompile("racoon.gltf");
 	#endif
 
 	return 0;
