@@ -267,44 +267,61 @@ namespace SH_COMP
   {
     if (asset.anims.empty())
       return;
-    
+
+    if (data.skins.size() == 0)
+    {
+	    std::cout << "[Model Compiler] Unable to load rigs without skin, aborting";
+      return;
+    }
+       
     auto& rig = asset.rig;
     auto& header = rig.header;
+    auto const& skin = data.skins[0];
+    auto const jointsCount {skin.joints.size()};
+    auto const& joints = skin.joints;
 
-    for (auto const& node : data.nodes)
+    std::vector<SHMat4> inverseBindMatrices;
+    FetchData(skin.inverseBindMatrices, inverseBindMatrices);
+
+    std::vector<NodeAsset> nodesOrdered;
+    nodesOrdered.reserve(jointsCount);
+    auto& nodes{ data.nodes };
+
+    for (auto i{0}; i < jointsCount; ++i)
     {
-      if (node.mesh > -1)
-        continue;
+      auto const& node{nodes[joints[i]]};
+      std::vector<IndexType> intermediate(node.children.size());
 
-      std::vector<IndexType> intermediate(node.children.begin(), node.children.end());
+      std::ranges::transform(
+        node.children,
+        intermediate.begin(),
+        [joints, jointsCount](auto const& index)->IndexType
+        {
+	        for (IndexType i{0}; i < jointsCount; ++i)
+	        {
+		        if (joints[i] == index)
+              return i;
+	        }
+        }
+      );
 
-      rig.nodes.emplace_back(
+	    nodesOrdered.emplace_back(
         node.name,
         static_cast<std::vector<IndexType> const&>(intermediate),
         node.rotation,
+        node.scale,
         node.translation,
-        node.matrix
-        //node.weights
+        node.matrix,
+			inverseBindMatrices[i]
       );
+      nodesOrdered[i].inverseBindMatrix = inverseBindMatrices[i];
       header.charCounts.emplace_back(node.name.size());
     }
 
-    for (auto const& skin : data.skins)
-    {
-      std::vector<SHMat4> inverseBindMatrices;
-      FetchData(skin.inverseBindMatrices, inverseBindMatrices);
-
-      std::vector<IndexType> joints(skin.joints.begin(), skin.joints.end());
-      auto& nodes{ rig.nodes };
-      auto matrix{ inverseBindMatrices.begin() };
-      for (auto const& joint : joints)
-      {
-        nodes[joint].inverseBindMatrix = *(matrix++);
-      }
-    }
+    rig.nodes = std::move(nodesOrdered);
 
     //Build header
-    header.startNode = data.skins[0].joints[0];
+    header.startNode = 0;
     header.nodeCount = rig.nodes.size();
   }
 }
