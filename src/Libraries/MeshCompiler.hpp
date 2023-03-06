@@ -57,8 +57,8 @@ namespace SH_COMP
     }
 
     ProcessMesh(model, asset);
-    ProcessAnimationChannels(model, asset);
     ProcessRigNodes(model, asset);
+    ProcessAnimationChannels(model, asset);
   }
 
   inline void MeshCompiler::ProcessMesh(ModelData const& data, ModelRef asset) noexcept
@@ -228,6 +228,12 @@ namespace SH_COMP
 
   inline void MeshCompiler::ProcessAnimationChannels(ModelData const& data, ModelRef asset) noexcept
   {
+    if (data.animations.empty())
+    {
+	    std::cout << "[Model Compiler] Animations do not exist\n";
+      return;
+    }
+
     asset.anims.resize(data.animations.size());
     for (auto i {0}; i < data.animations.size(); ++i)
     {
@@ -239,19 +245,20 @@ namespace SH_COMP
       for (auto const& channel : animData.channels)
       {
         auto const& sampler{ animData.samplers[channel.sampler] };
+        auto const& targetNode{asset.nodeIndexMap[channel.target_node]};
 
         // Resize nodes vector to latest largest index called
-        if (anim.nodes.size() <= channel.target_node)
-          anim.nodes.resize(channel.target_node + 1);
+        if (anim.nodes.size() <= targetNode)
+          anim.nodes.resize(targetNode + 1);
         
         if (channel.target_path == TRANSLATION_PATH.data())
-          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].positionKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[targetNode].positionKeys);
         else if (channel.target_path == SCALE_PATH.data())
-          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].scaleKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[targetNode].scaleKeys);
         else if (channel.target_path == ROTATION_PATH.data())
-          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[channel.target_node].rotationKeys);
+          FetchChannelKeyFrame(sampler.input, sampler.output, anim.nodes[targetNode].rotationKeys);
 
-        anim.nodes[channel.target_node].interpolation =
+        anim.nodes[targetNode].interpolation =
 	        sampler.interpolation == LINEAR_INTERPOLATION.data() ? AnimationInterpolation::LINEAR :
 	        sampler.interpolation == STEP_INTERPOLATION.data() ? AnimationInterpolation::STEP :
 	        sampler.interpolation == CUBICSPLINE_INTERPOLATION.data() ? AnimationInterpolation::CUBICSPLINE :
@@ -265,10 +272,7 @@ namespace SH_COMP
 
   inline void MeshCompiler::ProcessRigNodes(ModelData const& data, ModelRef asset) noexcept
   {
-    if (asset.anims.empty())
-      return;
-
-    if (data.skins.size() == 0)
+    if (data.skins.empty())
     {
 	    std::cout << "[Model Compiler] Unable to load rigs without skin, aborting";
       return;
@@ -279,10 +283,15 @@ namespace SH_COMP
     auto const& skin = data.skins[0];
     auto const jointsCount {skin.joints.size()};
     auto const& joints = skin.joints;
+    auto const& nodeMap {asset.nodeIndexMap};
 
     std::vector<SHMat4> inverseBindMatrices;
     FetchData(skin.inverseBindMatrices, inverseBindMatrices);
 
+    for (auto i{0}; i < skin.joints.size(); ++i)
+    {
+	    asset.nodeIndexMap.insert({skin.joints[i], i});
+    }
     std::vector<NodeAsset> nodesOrdered;
     nodesOrdered.reserve(jointsCount);
     auto& nodes{ data.nodes };
@@ -291,17 +300,12 @@ namespace SH_COMP
     {
       auto const& node{nodes[joints[i]]};
       std::vector<IndexType> intermediate(node.children.size());
-
       std::ranges::transform(
         node.children,
         intermediate.begin(),
-        [joints, jointsCount](auto const& index)->IndexType
+        [nodeMap](auto const& index)->IndexType
         {
-	        for (IndexType i{0}; i < jointsCount; ++i)
-	        {
-		        if (joints[i] == index)
-              return i;
-	        }
+          return nodeMap.at(static_cast<uint32_t>(index));
         }
       );
 

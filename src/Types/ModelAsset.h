@@ -13,6 +13,7 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 
 #include "MeshAsset.h"
 #include "AnimationAsset.h"
@@ -30,12 +31,15 @@ namespace SH_COMP
 	struct ModelAsset
 	{
 		ModelAssetHeader header;
-		RigData rig;
 
 		std::vector<MeshDataHeader> meshHeaders;
 		std::vector<AnimDataHeader> animHeaders;
 		
 		std::vector<MeshData> meshes;
 		std::vector<AnimData> anims;
-	};
+		
+		RigData rig;
+
+		std::unordered_map<uint32_t, uint32_t> nodeIndexMap;
+;	};
 }
