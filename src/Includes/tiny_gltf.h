@@ -6058,6 +6058,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
   }
 
   // 11. Parse Image
+  /*
   void *load_image_user_data{nullptr};
 
   LoadImageDataOption load_image_option;
@@ -6136,6 +6137,7 @@ bool TinyGLTF::LoadFromString(Model *model, std::string *err, std::string *warn,
       return false;
     }
   }
+  */
 
   // 12. Parse Texture
   {

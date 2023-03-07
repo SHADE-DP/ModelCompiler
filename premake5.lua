@@ -43,7 +43,8 @@ project "ModelCompiler"
     "TINYGLTF_NO_INCLUDE_STB_IMAGE",
     "TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE",
     "TINYGLTF_NO_STB_IMAGE_WRITE",
-    "TINYGLTF_NO_STB_IMAGE"
+    "TINYGLTF_NO_STB_IMAGE",
+    "TINYGLTF_USE_CPP14"
   }
   
   filter "configurations:Debug"
