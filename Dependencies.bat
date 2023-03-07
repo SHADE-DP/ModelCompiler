@@ -1,2 +1,2 @@
-rmdir "Dependencies/assimp" /S /Q
-git clone https://github.com/SHADE-DP/assimp.git "Dependencies/assimp"
+rmdir "Dependencies/tinygltf" /S /Q
+git clone https://github.com/XiaoQiDigipen/tinygltf.git "Dependencies/tinygltf"

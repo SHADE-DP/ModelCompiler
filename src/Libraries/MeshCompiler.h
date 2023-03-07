@@ -12,44 +12,54 @@
  *****************************************************************************/
 #pragma once
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <vector>
 
 #include "Types/AnimationAsset.h"
 #include "Types/ModelAsset.h"
 #include "AssetMacros.h"
 
+//Forward Declare
+namespace tinygltf
+{
+	struct Accessor;
+  struct BufferView;
+	class Model;
+}
+
 namespace SH_COMP
 {
+  using MeshVectorRef = std::vector<MeshData>&;
+  using AnimVectorRef = std::vector<AnimData>&;
+
+  using ModelRef = ModelAsset&;
+  using ModelData = tinygltf::Model;
+  using AccessorReference = std::vector<tinygltf::Accessor> const*;
+  using BufferViewReference = std::vector<tinygltf::BufferView> const*;
+  using BufferData = unsigned char const*;
+
   class MeshCompiler
   {
 
-    using MeshVectorRef = std::vector<MeshData>&;
-    using AnimVectorRef = std::vector<AnimData>&;
+    static AccessorReference accessors;
+    static BufferViewReference bufferViews;
+    static BufferData buffer;
 
-    using ModelRef = ModelAsset&;
+  	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
 
-    using AiNodeConstPtr = aiNode const*;
+    static inline void ProcessMesh(ModelData const& data, ModelRef asset) noexcept;
+    static inline void ProcessAnimationChannels(ModelData const& data, ModelRef asset) noexcept;
+    static inline void ProcessRigNodes(ModelData const& data, ModelRef asset) noexcept;
 
-    static Assimp::Importer aiImporter;
-    static uint32_t rigNodeIDCounter;
+    static inline void BuildHeaders(ModelRef asset) noexcept;
 
-    static void ProcessNode(AiNodeConstPtr node, aiScene const& scene, MeshVectorRef meshes, RigData& rig) noexcept;
-    static void GetMesh(aiMesh const& mesh, MeshData& meshData) noexcept;
-    static void BuildHeaders(ModelRef asset) noexcept;
+    template<typename T>
+    static void FetchData(int accessorID, std::vector<T>& dst);
 
-    static void BoneOffsetCopy(ModelRef asset) noexcept;
-
-    static void BuildArmature(AiNodeConstPtr node, RigData& rig) noexcept;
-    static void ParseAnimations(aiScene const& scene, std::vector<AnimData>& anims) noexcept;
-
-    static std::pair<RigNodeData*, AiNodeConstPtr> PairHelper(AiNodeConstPtr node);
-    static RigNodeData* NewNode(AiNodeConstPtr inNode);
-
-  	static void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
-
+    template<typename T>
+    static void FetchChannelKeyFrame(int inputAcc, int outputAcc, std::vector<T>& dst);
   public:
-    static void LoadAndCompile(AssetPath path) noexcept;
+    static inline void LoadAndCompile(AssetPath path) noexcept;
 	};
 }
+
+#include "MeshCompiler.hpp"

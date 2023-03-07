@@ -8,40 +8,37 @@
 
 namespace SH_COMP
 {
+	using NodeDataFlag = unsigned char;
+
+	constexpr NodeDataFlag NODE_DATA_ROTATION			= 0b0001;
+	constexpr NodeDataFlag NODE_DATA_SCALE				= 0b0010;
+	constexpr NodeDataFlag NODE_DATA_TRANSLATION	= 0b0100;
+	constexpr NodeDataFlag NODE_DATA_MATRIX				= 0b1000;
+	//constexpr NodeDataFlag NODE_DATA_WEIGHTS			= 0b10000;
+
 	struct RigDataHeader
 	{
 		uint32_t nodeCount;
+		IndexType startNode;
 		std::vector<uint32_t> charCounts;
 	};
 
-	struct RigNodeData
-	{
-		RigNodeData(const char* cstr, SHMat4 mat)
-			:name {cstr}, transform{mat} {}
-
-		std::string name;
-		SHMat4 transform;
-		SHMat4 offset;
-		std::vector<RigNodeData*> children;
-	};
-
-	struct RigNodeDataWrite
+	struct NodeAsset
 	{
 		std::string name;
-		SHMat4 transform;
-		SHMat4 offset;
-	};
-
-	struct RigWriteNode
-	{
-		uint32_t id;
-		std::vector<RigWriteNode*> children;
+		std::vector<IndexType> children;
+		std::vector<double>
+			rotation,
+			scale,
+			translation,
+			matrix;
+			//weights;
+		SHMat4 inverseBindMatrix;
 	};
 
 	struct RigData
 	{
 		RigDataHeader header;
-		// std::map<uint32_t, RigNodeData> nodeDataCollection;
-		RigNodeData* root;
+		std::vector<NodeAsset> nodes;
 	};
 }

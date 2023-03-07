@@ -1,5 +1,3 @@
-AssimpInclude = "%{prj.location}\\Dependencies\\assimp" 
-
 outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
 interdir = "%{wks.location}/bin_int"
 workspace "ModelCompile"
@@ -22,62 +20,40 @@ project "ModelCompiler"
   {
     "%{prj.location}/src/**.h",
     "%{prj.location}/src/**.cpp",
-  }
-
-  externalincludedirs
-  {
-	  "%{AssimpInclude}\\include"
+    "%{prj.location}/src/**.hpp"
   }
   
   includedirs
   {
-    "%{prj.location}/src",
+    "%{prj.location}/src"
   }
   
   externalwarnings "Off"
-  
-  libdirs
-  {
-    "%{AssimpInclude}/lib/Debug",
-    "%{AssimpInclude}/lib/Release"
-  }
 
   flags
   {
   	"MultiProcessorCompile"
   }
 
-  filter "configurations:Debug"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Debug\\assimp-vc142-mtd.dll\" \"$(OutDir)\""
-    }
-    
-  filter "configurations:Release"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
-    }
-
-  filter "configurations:Publish"
-    postbuildcommands 
-    {
-      "xcopy  /r /y /q \"%{AssimpInclude}\\bin\\Release\\assimp-vc142-mt.dll\" \"$(OutDir)\""
-    }
-
   warnings 'Extra'
+
+  defines {
+    "TINYGLTF_IMPLEMENTATION",
+    "TINYGLTF_NO_EXTERNAL_IMAGE",
+    "TINYGLTF_NO_INCLUDE_STB_IMAGE",
+    "TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE",
+    "TINYGLTF_NO_STB_IMAGE_WRITE",
+    "TINYGLTF_NO_STB_IMAGE"
+  }
   
   filter "configurations:Debug"
     symbols "On"
     defines {"_DEBUG"}
-    links{"assimp-vc142-mtd.lib"}
   
   filter "configurations:Release"
     optimize "On"
     defines{"_RELEASE"}
-    links{"assimp-vc142-mt.lib"}
   
   filter "configurations:Publish"
     optimize "On"
     defines{"_RELEASE, _PUBLISH"}
-    links{"assimp-vc142-mt.lib"}

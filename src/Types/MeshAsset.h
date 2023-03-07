@@ -12,37 +12,21 @@ namespace SH_COMP
 		uint32_t vertexCount;
 		uint32_t indexCount;
 		uint32_t charCount;
-		uint32_t boneCount;
-	};
-
-	struct MeshBoneInfo
-	{
-		uint32_t charCount;
-		uint32_t weightCount;
-	};
-
-	struct BoneWeight
-	{
-		uint32_t index;
-		float weight;
-	};
-
-	struct MeshBone
-	{
-		std::string name;
-		SHMat4 offset;
-		std::vector<BoneWeight> weights;
+		bool hasWeights;
 	};
 
 	struct MeshData
 	{
 		std::string name;
+
 		std::vector<SHVec3> vertexPosition;
 		std::vector<SHVec3> vertexTangent;
 		std::vector<SHVec3> vertexNormal;
 		std::vector<SHVec2> texCoords;
-		std::vector<uint32_t> indices;
-		std::vector<MeshBoneInfo> bonesInfo;
-		std::vector<MeshBone> bones;
+		std::vector<IndexType> indices;
+
+		//Variable data
+		std::vector<SHVec4> weights;
+		std::vector<SHVec4i> joints;
 	};
 }

@@ -57,36 +57,25 @@ namespace SH_COMP
 	      sizeof(uint32_t) * header.indexCount
 	    );
 
-      if (header.boneCount)
+      if (header.hasWeights)
       {
-	      file.write(
-	        reinterpret_cast<char const*>(asset.bonesInfo.data()),
-	        sizeof(MeshBoneInfo) * header.boneCount
-	      );
-
-	      for (auto const& bone : asset.bones)
-	      {
-		      file.write(
-	          bone.name.data(),
-	          bone.name.size()
-	        );
-
-	        file.write(
-	          reinterpret_cast<char const*>(&bone.offset),
-	          sizeof(SHMat4)
-	        );
-
-	        file.write(
-	        reinterpret_cast<char const*>(bone.weights.data()),
-	        sizeof(BoneWeight) * bone.weights.size()
-	        );
-	      }
+        file.write(
+          reinterpret_cast<char const*>(asset.weights.data()),
+          sizeof(SHVec4) * header.vertexCount
+        );
+        file.write(
+          reinterpret_cast<char const*>(asset.joints.data()),
+          sizeof(SHVec4i) * header.vertexCount
+        );
       }
     }
   }
 
-  void MeshWriter::WriteAnimData(FileReference file, std::vector<AnimDataHeader> const& headers,
-	  std::vector<AnimData> const& anims)
+  void MeshWriter::WriteAnimData(
+    FileReference file, 
+    std::vector<AnimDataHeader> const& headers,
+	  std::vector<AnimData> const& anims
+  )
   {
     
     for (auto i {0}; i < headers.size(); ++i)
@@ -109,36 +98,21 @@ namespace SH_COMP
 	      sizeof(double)
 	    );
 
-			for (auto i{0}; i < header.animNodeCount; ++i)
-			{
-				WriteAnimNode(file, header.nodeHeaders[i], data.nodeChannels[i]);
-			}
+      for (auto const& node : data.nodes)
+      {
+        WriteAnimNode(file, node);
+      }
     }
   }
 
-  void MeshWriter::WriteAnimNode(FileReference file, AnimNodeInfo const& info, AnimNode const& node)
+  void MeshWriter::WriteAnimNode(FileReference file, AnimNode const& node)
   {
     file.write(
-      node.name.data(),
-      info.charCount
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&node.pre),
-      sizeof(AnimationBehaviour)
-    );
-
-    file.write(
-      reinterpret_cast<char const*>(&node.post),
-      sizeof(AnimationBehaviour)
+      reinterpret_cast<char const*>(&node.interpolation),
+      sizeof(AnimationInterpolation)
     );
 
     uint32_t const keySize = node.positionKeys.size();
-
-    file.write(
-      reinterpret_cast<char const*>(&keySize),
-      sizeof(uint32_t)
-    );
 
     file.write(
       reinterpret_cast<char const*>(node.positionKeys.data()),
@@ -159,9 +133,8 @@ namespace SH_COMP
   void MeshWriter::WriteRig(FileReference file, RigData const& data)
   {
     WriteRigHeader(file, data.header);
-    RigWriteNode* root {nullptr};
-    WriteRigNodeData(file, data,root);
-    WriteRigTree(file, root);
+    WriteRigNodeData(file, data);
+    WriteRigStructure(file, data);
   }
 
   void MeshWriter::WriteRigHeader(FileReference file, RigDataHeader const& header)
@@ -172,89 +145,100 @@ namespace SH_COMP
     );
 
     file.write(
+      reinterpret_cast<char const*>(&header.startNode),
+      sizeof(uint32_t)
+    );
+
+    file.write(
       reinterpret_cast<char const*>(header.charCounts.data()),
       sizeof(uint32_t) * header.nodeCount
     );
   }
 
-  void MeshWriter::WriteRigNodeData(FileReference file, RigData const& rig, RigWriteNode*& treeRoot)
+  void MeshWriter::WriteRigNodeData(FileReference file, RigData const& rig)
   {
-    // Build node collection and assign ID to each node BFS STYLE
-    // Build tree of nodes using ID
-
-    std::vector<RigNodeDataWrite> dataToWrite;
-    dataToWrite.reserve(rig.header.nodeCount);
-
-    std::stack<std::pair<RigWriteNode*, RigNodeData*>> nodeStack;
-    treeRoot = new RigWriteNode;
-    treeRoot->id = 0;
-    treeRoot->children.clear();
-    nodeStack.emplace(std::make_pair(treeRoot, rig.root));
-
-    while(!nodeStack.empty())
+    std::vector<IndexType> treeNodeWrite;
+    for (auto const& node : rig.nodes)
     {
-	    auto currPair = nodeStack.top();
-      nodeStack.pop();
-      auto currWriteNode = currPair.first;
-      auto currDataNode = currPair.second;
-
-      dataToWrite.emplace_back(currDataNode->name, currDataNode->transform, currDataNode->offset);
-      uint32_t idCounter = dataToWrite.size() + currDataNode->children.size() - 1;
-
-      for (auto i{0}; i < currDataNode->children.size(); ++i)
-      {
-        auto child = currDataNode->children[i];
-	      auto newPair = std::make_pair(new RigWriteNode(), child);
-        
-        newPair.first->id = idCounter - i;
-        currWriteNode->children.push_back(newPair.first);
-        nodeStack.push(newPair);
-      }
-
-      delete currDataNode;
-    }
-
-    for (auto const& data : dataToWrite)
-    {
-	    file.write(data.name.c_str(), data.name.size());
       file.write(
-				reinterpret_cast<char const*>(&data.transform),
+        node.name.data(),
+        node.name.size()
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(&node.inverseBindMatrix),
         sizeof(SHMat4)
       );
+
+      //Build data flags
+      NodeDataFlag flag{ 0 };
+
+      if (!node.rotation.empty())
+        flag |= NODE_DATA_ROTATION;
+      if (!node.scale.empty())
+        flag |= NODE_DATA_SCALE;
+      if (!node.translation.empty())
+        flag |= NODE_DATA_TRANSLATION;
+      if (!node.matrix.empty())
+        flag |= NODE_DATA_MATRIX;
+
+      file.put(flag);
+
       file.write(
-				reinterpret_cast<char const*>(&data.offset),
-        sizeof(SHMat4)
+        reinterpret_cast<char const*>(node.rotation.data()),
+        sizeof(double) * node.rotation.size()
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.scale.data()),
+        sizeof(double) * node.scale.size()
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.translation.data()),
+        sizeof(double) * node.translation.size()
+      );
+
+      file.write(
+        reinterpret_cast<char const*>(node.matrix.data()),
+        sizeof(double) * node.matrix.size()
       );
     }
   }
 
-  void MeshWriter::WriteRigTree(FileReference file, RigWriteNode const* root)
+  void MeshWriter::WriteRigStructure(FileReference file, RigData const& rig)
   {
-    std::queue<RigWriteNode const*> nodeQueue;
-    nodeQueue.push(root);
+    std::queue<std::pair<IndexType, NodeAsset const*>> nodeQueue;
+    nodeQueue.push(
+      std::make_pair(
+        rig.header.startNode,
+        rig.nodes.data() + rig.header.startNode
+      )
+    );
 
-    int ctr = 0;
-
-    while(!nodeQueue.empty())
+    while (!nodeQueue.empty())
     {
-      auto node = nodeQueue.front();
+      auto const currentPair = nodeQueue.front();
+      auto const& node = *currentPair.second;
       nodeQueue.pop();
 
-	    file.write(
-				reinterpret_cast<char const*>(&node->id),
+      file.write(
+        reinterpret_cast<char const*>(&currentPair.first),
+        sizeof(IndexType)
+      );
+
+      auto const childCount{ static_cast<uint32_t>(node.children.size()) };
+      file.write(
+        reinterpret_cast<char const*>(&childCount),
         sizeof(uint32_t)
       );
 
-      uint32_t size = static_cast<uint32_t>(node->children.size());
-      
-	    file.write(
-				reinterpret_cast<char const*>(&size),
-        sizeof(uint32_t)
-      );
-
-      for (auto child : node->children)
+      for (auto const& child : node.children)
       {
-        nodeQueue.push(child);
+        nodeQueue.push(std::make_pair(
+          child,
+          rig.nodes.data() + child
+        ));
       }
     }
   }
@@ -276,26 +260,10 @@ namespace SH_COMP
 
     if (asset.header.animCount > 0)
     {
-	    for(auto const& animHeader : asset.animHeaders)
-	    {
-		    file.write(
-		      reinterpret_cast<char const*>(&animHeader.charCount),
-		      sizeof(uint32_t)
-		    );
-	      
-		    file.write(
-		      reinterpret_cast<char const*>(&animHeader.animNodeCount),
-		      sizeof(uint32_t)
-		    );
-
-	      for (auto const& nodeHeader : animHeader.nodeHeaders)
-	      {
-			    file.write(
-			      reinterpret_cast<char const*>(&nodeHeader),
-			      sizeof(nodeHeader)
-			    );
-	      }
-	    }
+	    file.write(
+	      reinterpret_cast<char const*>(asset.animHeaders.data()),
+	      sizeof(AnimDataHeader) * asset.header.animCount
+	    );
     }
   }
 
@@ -304,7 +272,7 @@ namespace SH_COMP
     WriteMeshData(file, asset.meshHeaders, asset.meshes);
     WriteAnimData(file, asset.animHeaders, asset.anims);
 
-    if (asset.rig.root)
+    if (!asset.rig.nodes.empty())
     {
 			WriteRig(file, asset.rig);
     }

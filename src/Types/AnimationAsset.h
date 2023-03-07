@@ -12,64 +12,55 @@
 
 #include "PseudoMath.h"
 #include <vector>
-#include <assimp/anim.h>
+#include <string>
 
 namespace SH_COMP
 {
-	enum class AnimationBehaviour : uint8_t
+	enum class AnimationInterpolation : uint8_t
 	{
-		DEFAULT = 0x0,
-		CONSTANT = 0x1,
-		LINEAR = 0x2,
-		REPEAT = 0x3
+		DEFAULT = 0x1,
+		LINEAR = 0x1,
+		STEP = 0x2,
+		CUBICSPLINE = 0x3
+	};
+
+	// Base 
+	struct KeyBase
+	{
+		float time;
 	};
 
 	// Smallest data containers
-	struct PositionKey
+	struct PositionKey :KeyBase
 	{
-		float time;
 		SHVec3 value;
 	};
 	
-	struct RotationKey
+	struct RotationKey : KeyBase
 	{
-		float time;
 		SHVec4 value;
 	};
 	
-	struct ScaleKey
+	struct ScaleKey :KeyBase
 	{
-		float time;
 		SHVec3 value;
-	};
-
-	// Headers for read/write
-	struct AnimNodeInfo
-	{
-		uint32_t charCount;
-		uint32_t posKeyCount;
-		uint32_t rotKeyCount;
-		uint32_t scaKeyCount;
 	};
 
 	struct AnimDataHeader
 	{
 		uint32_t charCount;
 		uint32_t animNodeCount;
-		std::vector<AnimNodeInfo> nodeHeaders;
+		uint32_t frameCount;
 	};
 
 	// Main data containers
 	struct AnimNode
 	{
-		std::string name;
-		AnimationBehaviour pre;
-		AnimationBehaviour post;
+		AnimationInterpolation interpolation;
 
 		std::vector<PositionKey> positionKeys;
 		std::vector<RotationKey> rotationKeys;
 		std::vector<ScaleKey> scaleKeys;
-
 	};
 
 	struct AnimData
@@ -79,8 +70,7 @@ namespace SH_COMP
 		double duration;
 		double ticksPerSecond;
 
-		std::vector<AnimNode> nodeChannels;
-		//std::vector<aiMeshAnim*> meshChannels;
-		//std::vector<aiMeshMorphAnim*> morphMeshChannels;
+		//One node represents the animation transforms for one bone in the rig
+		std::vector<AnimNode> nodes;
 	};
 }
