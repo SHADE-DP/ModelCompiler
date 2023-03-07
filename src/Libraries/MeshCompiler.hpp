@@ -25,12 +25,11 @@
 
 namespace SH_COMP
 {
-  std::string MeshCompiler::filename{""};
   AccessorReference MeshCompiler::accessors{ nullptr };
   BufferViewReference MeshCompiler::bufferViews{ nullptr };
   BufferData MeshCompiler::buffer{ nullptr };
 
-  inline void MeshCompiler::LoadFromFile(AssetPath path, ModelRef asset) noexcept
+  inline bool MeshCompiler::LoadFromFile(AssetPath path, ModelRef asset) noexcept
   {
     ModelData model;
     tinygltf::TinyGLTF loader;
@@ -39,27 +38,37 @@ namespace SH_COMP
     bool result = loader.LoadASCIIFromFile(&model, &error, &warn, path.string());
 
     if (!warn.empty())
-      std::cout << "[TinyGLTF Warning] " << filename << " : " << warn << std::endl;
+      std::cout << "[TinyGLTF Warning] " << warn;
 
     if (!error.empty())
-      std::cout << "[TinyGLTF Error] " << filename << " : " << error << std::endl;
+      std::cout << "[TinyGLTF Error] " << error;
 
     if (!result)
     { 
-	    std::cout << "TinyGLTF failed to parse: " << filename << "\n";
-      std::exit(1);
+	    std::cout << "[TinyGLTF] Failed to parse\n";
+      return false;
     }
 
-    ProcessMesh(model, asset);
-    ProcessRigNodes(model, asset);
-    ProcessAnimationChannels(model, asset);
+    if (ProcessMesh(model, asset))
+    {
+			auto const hasAnims {!model.animations.empty()};
+      if (hasAnims)
+      {
+		    ProcessRigNodes(model, asset);
+		    ProcessAnimationChannels(model, asset);
+      }
+      return true;
+    }
+
+    return false;
   }
 
-  inline void MeshCompiler::ProcessMesh(ModelData const& data, ModelRef asset) noexcept
+  inline bool MeshCompiler::ProcessMesh(ModelData const& data, ModelRef asset) noexcept
   {
     accessors = &data.accessors;
     bufferViews = &data.bufferViews;
     buffer = data.buffers[0].data.data();
+    auto const hasAnims {!data.animations.empty()};
 
     for (auto const& mesh : data.meshes)
     {
@@ -88,19 +97,25 @@ namespace SH_COMP
       }
       catch (std::out_of_range e)
       {
-	      std::cout << "[Model Compiler] Failed to load critical data from gltf: " << filename << "\n";
+	      std::cout << "[Model Compiler] Failed to load critical data from gltf\n";
+        return false;
       }
 
-      try
+      if (hasAnims)
       {
-        FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), meshIn.weights);
-        FetchData(primitive.attributes.at(ATT_JOINT.data()), meshIn.joints);
-      }
-      catch(std::out_of_range e)
-      {
-        std::cout << "[Model Compiler] " << filename << ": No weights and joints found for mesh: " << mesh.name << std::endl;
+	      try
+	      {
+	        FetchData(primitive.attributes.at(ATT_WEIGHTS.data()), meshIn.weights);
+	        FetchData(primitive.attributes.at(ATT_JOINT.data()), meshIn.joints);
+	      }
+	      catch(std::out_of_range e)
+	      {
+	        std::cout << "[Model Compiler] No weights and joints found for mesh: " << mesh.name << std::endl;
+	      }
       }
     }
+
+    return true;
   }
 
   template <typename T>
@@ -213,11 +228,16 @@ namespace SH_COMP
   {
     auto const asset = new ModelAsset();
 
-    filename = path.filename().string();
-
-    LoadFromFile(path, *asset);
-    BuildHeaders(*asset);
-    MeshWriter::CompileMeshBinary(path, *asset);
+    if (LoadFromFile(path, *asset))
+    {
+	    BuildHeaders(*asset);
+	    MeshWriter::CompileMeshBinary(path, *asset);
+			std::cout << "[Model Compiler] Compiled file: " << path << "\n\n";
+    }
+    else
+    {
+	    std::cout << "[Model Compiler] Failed to compile file: " << path << "\n\n";
+    }
 
     delete asset;
   }
@@ -226,7 +246,7 @@ namespace SH_COMP
   {
     if (data.animations.empty())
     {
-	    std::cout << "[Model Compiler] " << filename << ": Animations do not exist\n";
+	    std::cout << "[Model Compiler] Animations do not exist\n";
       return;
     }
 
@@ -270,7 +290,7 @@ namespace SH_COMP
   {
     if (data.skins.empty())
     {
-	    std::cout << "[Model Compiler] " << filename << ": Unable to load rigs without skin, aborting";
+	    std::cout << "[Model Compiler] Skins not found for asset\n";
       return;
     }
        

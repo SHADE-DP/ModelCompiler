@@ -39,14 +39,13 @@ namespace SH_COMP
 
   class MeshCompiler
   {
-    static std::string filename;
     static AccessorReference accessors;
     static BufferViewReference bufferViews;
     static BufferData buffer;
 
-  	static inline void LoadFromFile(AssetPath path, ModelRef asset) noexcept;
+  	static inline bool LoadFromFile(AssetPath path, ModelRef asset) noexcept;
 
-    static inline void ProcessMesh(ModelData const& data, ModelRef asset) noexcept;
+    static inline bool ProcessMesh(ModelData const& data, ModelRef asset) noexcept;
     static inline void ProcessAnimationChannels(ModelData const& data, ModelRef asset) noexcept;
     static inline void ProcessRigNodes(ModelData const& data, ModelRef asset) noexcept;
 
