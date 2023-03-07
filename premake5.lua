@@ -1,12 +1,12 @@
-outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
-interdir = "%{wks.location}/bin_int"
-workspace "ModelCompile"
-architecture "x64"
-  configurations
-  {
-    "Release",
-    "Debug"
-  }
+-- outputdir = "%{wks.location}/bin/%{cfg.buildcfg}"
+-- interdir = "%{wks.location}/bin_int"
+-- workspace "ModelCompile"
+-- architecture "x64"
+--   configurations
+--   {
+--     "Release",
+--     "Debug"
+--   }
 
 project "ModelCompiler"
   kind "ConsoleApp"
