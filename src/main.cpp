@@ -17,8 +17,8 @@
 int main(int argc, char* argv[])
 {	
 	std::vector<std::string> paths;
-
-	#if 0
+	
+	#if 1
 
 	if (argc == 1)
 	{

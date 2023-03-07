@@ -25,6 +25,7 @@
 
 namespace SH_COMP
 {
+  std::string MeshCompiler::filename{""};
   AccessorReference MeshCompiler::accessors{ nullptr };
   BufferViewReference MeshCompiler::bufferViews{ nullptr };
   BufferData MeshCompiler::buffer{ nullptr };
@@ -38,14 +39,14 @@ namespace SH_COMP
     bool result = loader.LoadASCIIFromFile(&model, &error, &warn, path.string());
 
     if (!warn.empty())
-      std::cout << "[TinyGLTF Warning]: " << warn << std::endl;
+      std::cout << "[TinyGLTF Warning] " << filename << " : " << warn << std::endl;
 
     if (!error.empty())
-      std::cout << "[TinyGLTF Error]: " << error << std::endl;
+      std::cout << "[TinyGLTF Error] " << filename << " : " << error << std::endl;
 
     if (!result)
     { 
-	    std::cout << "TinyGLTF failed to parse.\n";
+	    std::cout << "TinyGLTF failed to parse: " << filename << "\n";
       std::exit(1);
     }
 
@@ -87,7 +88,7 @@ namespace SH_COMP
       }
       catch (std::out_of_range e)
       {
-	      std::cout << "[Model Compiler] Failed to load critical data from gltf\n";
+	      std::cout << "[Model Compiler] Failed to load critical data from gltf: " << filename << "\n";
       }
 
       try
@@ -97,7 +98,7 @@ namespace SH_COMP
       }
       catch(std::out_of_range e)
       {
-        std::cout << "No weights and joints found for mesh: " << mesh.name << std::endl;
+        std::cout << "[Model Compiler] " << filename << ": No weights and joints found for mesh: " << mesh.name << std::endl;
       }
     }
   }
@@ -212,6 +213,8 @@ namespace SH_COMP
   {
     auto const asset = new ModelAsset();
 
+    filename = path.filename().string();
+
     LoadFromFile(path, *asset);
     BuildHeaders(*asset);
     MeshWriter::CompileMeshBinary(path, *asset);
@@ -223,7 +226,7 @@ namespace SH_COMP
   {
     if (data.animations.empty())
     {
-	    std::cout << "[Model Compiler] Animations do not exist\n";
+	    std::cout << "[Model Compiler] " << filename << ": Animations do not exist\n";
       return;
     }
 
@@ -267,7 +270,7 @@ namespace SH_COMP
   {
     if (data.skins.empty())
     {
-	    std::cout << "[Model Compiler] Unable to load rigs without skin, aborting";
+	    std::cout << "[Model Compiler] " << filename << ": Unable to load rigs without skin, aborting";
       return;
     }
        

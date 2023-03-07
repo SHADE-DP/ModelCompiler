@@ -39,7 +39,7 @@ namespace SH_COMP
 
   class MeshCompiler
   {
-
+    static std::string filename;
     static AccessorReference accessors;
     static BufferViewReference bufferViews;
     static BufferData buffer;
