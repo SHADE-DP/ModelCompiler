@@ -12,13 +12,6 @@
  *****************************************************************************/
 
 
-#define TINYGLTF_IMPLEMENTATION
-#define TINYGLTF_NO_EXTERNAL_IMAGE
-#define TINYGLTF_NO_INCLUDE_STB_IMAGE
-#define TINYGLTF_NO_INCLUDE_STB_IMAGE_WRITE
-#define TINYGLTF_NO_STB_IMAGE_WRITE
-#define TINYGLTF_NO_STB_IMAGE
-
 #include "MeshCompiler.h"
 #include "MeshWriter.h"
 
@@ -26,7 +19,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "tiny_gltf.h"
+#include "Includes/tiny_gltf.h"
 #include <map>
 #include <stack>
 

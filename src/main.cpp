@@ -8,11 +8,11 @@
  *		        or disclosure of this file or its contents without the prior
  *			      written consent of Digipen Institute of Technology is prohibited.
  ******************************************************************************/
+
 #include "Libraries/MeshCompiler.h"
 
 #include <vector>
 #include <filesystem>
-#include <iostream>
 
 int main(int argc, char* argv[])
 {	
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 
 	if (argc == 1)
 	{
-		#if 0
+		#if 1
 		if (std::filesystem::is_directory(ASSET_ROOT))
 		{
 			for (auto& dir : 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 	#else
 	(void)argc;
 	(void)argv;
-	SH_COMP::MeshCompiler::LoadAndCompile("racoon.gltf");
+	SH_COMP::MeshCompiler::LoadAndCompile("MD_HomeownerV2.gltf");
 	#endif
 
 	return 0;
