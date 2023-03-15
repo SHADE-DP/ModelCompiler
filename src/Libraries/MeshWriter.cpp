@@ -216,6 +216,9 @@ namespace SH_COMP
       )
     );
 
+    int nodeCounter{ 0 };
+    IndexType latest{ rig.header.startNode };
+
     while (!nodeQueue.empty())
     {
       auto const currentPair = nodeQueue.front();
@@ -232,6 +235,17 @@ namespace SH_COMP
         reinterpret_cast<char const*>(&childCount),
         sizeof(uint32_t)
       );
+      nodeCounter++;
+
+      if (node.children.empty() && nodeCounter < rig.nodes.size())
+      {
+        nodeQueue.push(
+          std::make_pair(
+            ++latest,
+            rig.nodes.data() + latest
+          )
+        );
+      }
 
       for (auto const& child : node.children)
       {
@@ -239,6 +253,8 @@ namespace SH_COMP
           child,
           rig.nodes.data() + child
         ));
+
+        latest = latest < child ? child : latest;
       }
     }
   }

@@ -39,7 +39,6 @@ namespace SH_COMP
 		std::vector<AnimData> anims;
 		
 		RigData rig;
-
 		std::unordered_map<uint32_t, uint32_t> nodeIndexMap;
 ;	};
 }
