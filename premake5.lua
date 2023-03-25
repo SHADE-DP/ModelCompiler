@@ -56,5 +56,4 @@ project "ModelCompiler"
     defines{"_RELEASE"}
   
   filter "configurations:Publish"
-    optimize "On"
-    defines{"_RELEASE, _PUBLISH"}
+    flags {"ExcludeFromBuild"}
